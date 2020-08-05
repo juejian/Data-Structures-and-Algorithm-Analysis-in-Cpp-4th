@@ -1,0 +1,14 @@
+template<typename Comparable>
+void selectionSort(vector<Comparable>& toSort)
+{
+	int minIndex;
+	for (int i = 0; i < toSort.size(); i++)
+	{
+		minIndex = i;
+		for (int j = i + 1; j < toSort.size(); j++)
+		{
+			if (toSort[j] < toSort[minIndex])
+				swap(toSort[j], toSort[i]);
+		}
+	}
+}

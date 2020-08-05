@@ -1,0 +1,158 @@
+/*
+   Finds the min weight spanning tree for a weighted graph stored as adjacency list
+   Assumes vertex labels are integers from 0 to |V| -1
+   input format:
+   The first line contains the number of vertices n
+   Each of the next n lines starts with the outdegree of that vertex (m) followed by m
+   label, edge weight pairs.
+
+   output is a list of edges given by the 2 vertices.
+*/
+#include<iostream>
+#include<vector>
+#include <queue>
+using namespace std;
+
+class DisjointSet
+{
+private:
+	vector<int> set;
+public:
+	DisjointSet(int size = 0) : set(size, -1) {}
+	int find(int i)
+	{
+		if (set[i] < 0)
+			return i;
+		else
+			return set[i] = find(set[i]);
+	}
+	void setUnion(int a, int b)
+	{
+		int setA = find(a);
+		int setB = find(b);
+		if (setA != setB)
+		{
+			if (set[setA] < set[setB])
+			{
+				set[setA] += set[setB];
+				set[setB] = setA;
+			}
+			else
+			{
+				set[setB] += set[setA];
+				set[setA] = setB;
+			}
+		}
+	}
+};
+
+struct Vertex
+{
+	int label;
+	bool known;
+	vector<double> weight;
+	vector<int> adj;
+	Vertex(int name = -1) { label = name; known = false; }
+};
+
+struct Edge
+{
+	int fromVert;
+	int toVert;
+	double weight;
+	Edge(int from = -1, int to = -1, double w = -1) :fromVert(from), toVert(to), weight(w) {}
+	bool operator< (const Edge& rhs) const
+	{
+		return weight > rhs.weight;
+	}
+};
+
+
+class Graph
+{
+private:
+	vector<Vertex> adjList;
+	priority_queue<Edge> edges;
+public:
+	Graph() {}
+
+	void insert(Vertex  V)
+	{
+		adjList.push_back(V);
+	}
+
+	vector<Edge>  kruskal()
+	{
+		DisjointSet sets(adjList.size());
+		vector<Edge> tree;
+		int a, b;
+		tree.push_back(edges.top());
+		sets.setUnion(edges.top().fromVert, edges.top().toVert);
+		edges.pop();
+		while (!edges.empty() && tree.size() < adjList.size())
+		{
+			if (sets.find(a = edges.top().toVert) != sets.find(b = edges.top().fromVert))
+			{
+				sets.setUnion(a, b);
+				tree.push_back(edges.top());
+			}
+			edges.pop();
+		}
+		return tree;
+	}
+
+	void readIn()
+	{
+		int numVerts;
+		int outDegree;
+		int adjLabel;
+		double weight;
+		Vertex vertex;
+		Edge edge;
+
+		cin >> numVerts;
+		for (int i = 0; i < numVerts; i++)
+		{
+			cin >> outDegree;
+			vertex.label = i;
+			for (int j = 0; j < outDegree; j++)
+			{
+				cin >> adjLabel;
+				vertex.adj.push_back(adjLabel);
+				cin >> weight;
+				vertex.weight.push_back(weight);
+				edge.fromVert = i;
+				edge.toVert = adjLabel;
+				edge.weight = weight;
+				edges.push(edge);
+			}
+			insert(vertex);
+			vertex.adj.clear();
+			vertex.weight.clear();
+		}
+	}
+};
+
+int main()
+{
+
+	Graph graph;
+	vector<Edge> spanTree;
+
+
+	graph.readIn();
+	spanTree = graph.kruskal();
+	for (int i = 0; i < spanTree.size(); i++)
+		cout << spanTree[i].fromVert << " " << spanTree[i].toVert << " " << spanTree[i].weight << endl;
+	return 0;
+}
+/* figure 9.48
+7
+3 3 1 1 2 2 4
+3 4 10 3 3 0 2
+3 0 4 5 5 3 2
+6 2 2 5 8 6 4 4 7 0 1 1 3
+3 6 6 3 7 1 10
+3 2 5 3 8 6 1
+3 5 1 3 4 4 6
+*/

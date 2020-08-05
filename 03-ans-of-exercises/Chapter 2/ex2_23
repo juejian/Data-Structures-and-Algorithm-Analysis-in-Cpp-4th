@@ -1,0 +1,14 @@
+NumberType optimized_pow_n(NumberType x, unsigned int n)
+{
+	NumberType pw = 1;
+
+	while (n > 0) {
+		if (n & 1)        // n & 1 等价于 (n % 2) == 1
+			pw *= x;
+		x *= x;
+		n >>= 1;        // n >>= 1 等价于 n /= 2
+	}
+
+	return pw;
+}
+//https://www.cnblogs.com/wallace/archive/2009/12/27/1633683.html

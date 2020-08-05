@@ -1,0 +1,88 @@
+#pragma once
+#include<string>
+#include<vector>
+#include<iostream>
+using namespace std;
+template<typename Comparables>
+class orderedcollection
+{
+public:
+	orderedcollection() = default;
+	orderedcollection(Comparables oj) :obj(oj) {}
+	Comparables getObj() { return obj; }
+	//size、clear函数随着类型的确定编译器会自动选择
+	bool isEmpty() { return obj.size() ? false : true; }
+	Comparables makeEmpty() { obj.clear(); }
+	orderedcollection<Comparables>& operator=(orderedcollection<Comparables>& a) { *this = a; }
+	~orderedcollection() {};
+	template<typename T>
+	Comparables insert(T apl) {
+		Comparables temp;
+		temp.resize(obj.size() + 1);
+		for (size_t i = 0; i < obj.size(); ++i) {
+			temp[i] = obj[i];
+		}
+		temp[temp.size() - 1] = apl;
+		obj = temp;
+		return obj;
+	}
+	template<typename T>
+	bool contains(T in) {
+		if (obj.size() == 0) { return false; }
+		for (auto ob : obj) {
+			if (in == ob)
+				return true;
+		}
+		return false;
+	}
+	template<typename T>
+	void remove(T oup) {
+		if (obj.size() == 0) { return; }
+		for (size_t i = 0; i < obj.size(); ++i) {
+			if (oup == obj[i]) {
+				obj[i] = NULL;
+			}
+		}
+		Comparables temp;
+		temp.resize(obj.size() - 1);
+		int i = 0;
+		for (auto ob : obj) {
+			if (ob != NULL) {
+				temp[i] = ob;
+				++i;
+			}
+		}
+		obj = temp;
+	}
+	const Comparables& findMin() const {
+		if (!isEmpty()) {
+			cout << "There is Empty." << endl;
+		}
+		int min = 0;
+		for (int i = 1; i < obj.size(); ++i) {
+			if (obj[i] < obj[min]) {
+				min = i;
+			}
+		}
+		return obj[min];
+	}
+	const Comparables& findMax() const {
+		if (!isEmpty()) {
+			cout << "There is Empty." << endl;
+		}
+		int max = 0;
+		for (int i = 1; i < obj.size(); ++i) {
+			if (obj[i] > obj[min]) {
+				max = i;
+			}
+		}
+		return obj[max];
+	}
+	void print() {
+		for (auto each : obj)
+			cout << each << " " << endl;
+	}
+
+private:
+	Comparables obj;
+};

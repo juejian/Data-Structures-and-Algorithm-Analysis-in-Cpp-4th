@@ -1,0 +1,56 @@
+#include<stdio.h>
+#include<string.h>
+#include<math.h>
+#define MAXN 100
+
+unsigned int hash(char* key, int charNum) {
+	unsigned int hashVal = 0;
+	while (charNum--)
+		hashVal = (hashVal << 5) + *key++;
+	return hashVal;
+}
+
+unsigned int mypow(int n) {//?
+	unsigned int ans = 1;
+	while (n--)
+		ans = ans << 5;
+	return ans;
+}
+
+
+int main() {
+	char a[MAXN];
+	char p[MAXN];
+
+	unsigned int hashRecord[MAXN];
+	scanf("%s", a);
+	scanf("%s", p);
+
+	int len1 = strlen(a);
+	int len2 = strlen(p);
+
+	hashRecord[0] = hash(a, len2);//O(k)
+
+	for (int i = 1; i < len1 - len2 + 1; i++) {//O(N-k)
+		hashRecord[i] = ((hashRecord[i - 1] - a[i - 1] * mypow(len2 - 1)) * 32 + a[i + len2 - 1]);
+	}//将A分成K组并分别计算出相应分组所对应的hash
+
+	unsigned int hashOfp = hash(p, len2);//O(k)
+
+	for (int i = 0; i < len1 - len2 + 1; i++) {//O(n-k)
+		if (hashRecord[i] == hashOfp) {
+			int flag = 0;
+			for (int j = 0; j < len2; j++)
+				if (a[i + j] != p[j]) {
+					flag = 1;
+					break;
+				}
+			if (!flag) {
+				printf("the position is %d", i + 1);
+				break;
+			}
+		}
+	}
+
+}
+//https://blog.csdn.net/qq789045/article/details/51411480#commentBox

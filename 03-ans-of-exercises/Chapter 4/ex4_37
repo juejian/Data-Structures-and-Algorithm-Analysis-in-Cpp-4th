@@ -1,0 +1,12 @@
+void printRange(const Comparable& lower, const Comparable& upper, BinaryNode* t)
+{
+	if (t != NULL)
+	{
+		if (lower <= t->element)
+			printRange(lower, upper, t->left);
+		if (lower <= t->element && t->element <= upper)
+			cout << t->element << endl;
+		if (t->element <= upper)
+			printRange(lower, upper, t->right);
+	}
+}

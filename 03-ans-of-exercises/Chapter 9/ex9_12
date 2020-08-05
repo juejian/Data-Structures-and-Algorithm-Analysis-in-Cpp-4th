@@ -1,0 +1,27 @@
+/*
+Let T be the tree with root r, and children r1, r2, . . . , rk, which are the roots of T1, T2, . . . , Tk, which have maximum incoming flow of c1, c2, . . . , ck, respectively. 
+By the problem statement, we may take the maximum incoming flow of r to be infinity. 
+The recursive pseudo-method findMaxFlow( T, incomingCap ) finds the value of the maximum flow in T (finding the actual flow is a matter of bookkeeping); 
+the flow is guaranteed not to exceed incomingCap.
+If T is a leaf, then findMaxFlow returns incomingCap since we have assumed a sink of infinite capacity. 
+Otherwise, a standard postorder traversal can be used to compute the maximum flow in linear time.
+*/
+
+// FlowType is an int or double
+static FlowType findMaxFlow(Tree T, FlowType incomingCap)
+{
+	FlowType childFlow, totalFlow;
+	if (T.hasNoSubtrees())
+		return incomingCap;
+	else
+	{
+		totalFlow = 0;
+		for (each subtree $T_i$ of T)
+		{
+			childFlow = findMaxFlow($T_i$, min(incomingCap, $c_i$));
+			totalFlow += childFlow;
+			incomingCap -= childFlow;
+		}
+		return totalFlow;
+	}
+}

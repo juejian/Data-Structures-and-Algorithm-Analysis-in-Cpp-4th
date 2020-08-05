@@ -1,0 +1,75 @@
+int maxAdd(const vector<int>& a)
+{
+	int j, i = 0;
+	int max = 0;
+	int smax = 0;
+	int lens = a.size();
+	for (int z = 0; z < lens; ++z) {
+		if (a[z] > max) {
+			max = a[z];
+			i = z;
+		}
+	}
+	for (int z = 0; z < lens; ++z) {
+		if (a[z] > smax && a[z] < max) {
+			smax = a[z];
+			j = z;
+		}
+	}
+	return a[j] + a[i];//是否需要比较i、j大小，个人觉得没有必要
+}
+
+int maxMultiplicate(const vector<int>& a)
+{
+	int j, i = 0;
+	int max = 0;
+	int smax = 0;
+	int lens = a.size();
+	for (int z = 0; z <lens; ++z) {
+		if (a[z] > max) {
+			max = a[z];
+			i = z;
+		}
+	}
+	for (int z = 0; z < lens; ++z) {
+		if (a[z] > smax && a[z] < max) {
+			smax = a[z];
+			j = z;
+		}
+	}
+	return a[j] * a[i];//是否需要比较i、j大小，个人觉得没有必要
+}
+
+int maxSubtraction(const vector<int>& a)
+{
+	int j, i, current = 0;
+	int maxsub = a[j] - a[i];
+	int lens = a.size();
+	for (int z = 0; z < lens; ++z) {
+		current = a[z] - a[i];
+		if (current > maxsub) {
+			maxsub = current;
+		}
+		if (a[z] < a[i]) {
+			i = z;
+		}
+	}
+	return maxsub;
+}
+
+int maxDivide(const vector<int>& a)
+{
+	int j, i, current = 0;
+	int maxdiv = a[j] / a[i];
+	int lens = a.size();
+	for (int z = 0; z <lens ; ++z) {
+		current = a[z] / a[i];
+		if (current > maxdiv) {
+			maxdiv = current;
+		}
+		if (a[z] < a[i]) {
+			i = z;
+		}
+	}
+	return maxdiv;
+}

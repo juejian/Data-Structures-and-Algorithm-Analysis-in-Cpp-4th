@@ -1,0 +1,17 @@
+//nonrecursive
+void mergesort(vector<Comparable>& a)
+{
+	int n = a.size();
+	vector<Comparable> tmpArray(n);
+	for (int subListSize = 1; subListSize < n; subListSize *= 2)
+	{
+		int part1Start = 0;
+		while (part1Start + subListSize < n - 1)
+		{
+			int part2Start = part1Start + subListSize;
+			int part2End = min(n, part2Start + subListSize - 1);
+			merge(a, tmpArray, part1Start, part2Start, part2End);
+			part1Start = part2End + 1;
+		}
+	}
+}

@@ -1,0 +1,10 @@
+void removeLeaves(Node*& t)
+{
+	if (t == NULL || (t->left = NULL && t->right == NULL))
+	{
+		t = NULL;
+		return;
+	}
+	removeLeaves(t->left);
+	removeLeaves(t->right);
+}

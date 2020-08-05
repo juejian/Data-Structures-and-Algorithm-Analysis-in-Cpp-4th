@@ -1,0 +1,23 @@
+//take linear time
+int countNodes(Node* t)
+{
+	if (t == NULL)
+		return 0;
+	return 1 + countNodes(t->left) + countNodes(t->right);
+}
+int countLeaves(Node* t)
+{
+	if (t == NULL)
+		return 0;
+	else if (t->left == NULL->t->right = NULL)
+		return 1;
+	return countLeaves(t->left) + countLeaves(t->right);
+}
+//An alternative method is to use the results of Exercise 4.6
+int countFull(Node* t)
+{
+	if (t == NULL)
+		return 0;
+	int tIsFull = (t->left != NULL && t->right != NULL) ? 1 : 0;
+	return tIsFull + countFull(t->left) + countFull(t->right);
+}

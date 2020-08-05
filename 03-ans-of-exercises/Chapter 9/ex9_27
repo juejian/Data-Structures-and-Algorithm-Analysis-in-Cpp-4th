@@ -1,0 +1,193 @@
+/*
+   Finds the min weight spanning tree for a weighted graph stored as adjacency list
+   Assumes vertex labels are integers from 0 to |V| -1
+   input format:
+   The first line contains the number of vertices n
+   Each of the next n lines starts with the outdegree of that vertex (m) followed by m
+   label, edge weight pairs.
+
+   output format:  is a list of verticies and component numbers
+*/
+#include<iostream>
+#include<vector>
+#include <queue>
+using namespace std;
+
+
+
+struct Vertex
+{
+	int label;
+	int component;
+	bool known;
+	int postOrderNum;
+	vector<Vertex*> adj;
+	Vertex(int name = -1) { label = name; known = false; component = -1; }
+	bool operator < (const Vertex& rhs) const
+	{
+		return postOrderNum > rhs.postOrderNum;
+	}
+};
+
+class Graph
+{
+private:
+	vector<Vertex*> adjList;
+	int visitNum;
+	void postOrder(Vertex* vertexPtr)
+	{
+		// cout<<"postorder: "<<i<<endl;
+
+		if (!vertexPtr->known)
+		{
+			visitNum++;
+			vertexPtr->known = true;
+			for (auto x : vertexPtr->adj)
+				postOrder(x);
+			vertexPtr->postOrderNum = visitNum++;
+		}
+
+	}
+	void reachable(Vertex * &start, int compNum, vector<Vertex*> & revList)//寻找强连接关系，compNum表示第几个连接
+	{
+		if (start->component < 0) // not already assigned
+		{
+			start->component = compNum; // assign it a number
+			adjList[start->label]->component = compNum;
+			for (auto x : start->adj)
+				reachable(x, compNum, revList);
+		}
+	}
+public:
+	Graph() {}
+	void postOrder()
+	{
+		int i, lastUsed = 0;
+		visitNum = 0;
+		do
+		{
+			i = lastUsed++;
+			while (i < adjList.size() && adjList[i]->known)
+			{
+				i++;
+			}
+			if (i < adjList.size())
+			{
+				lastUsed = i;
+				postOrder(adjList[i]);
+			}
+		} while (i < adjList.size());
+	}
+
+	void printGraph(vector<Vertex*> list)
+	{
+		for (auto x : list)
+		{
+			cout << x->label << " :";
+			for (auto y : x->adj)
+				cout << y->label << " ";
+			cout << endl;
+		}
+	}
+
+	void sort(vector<Vertex*> & list)
+		// sorts in decending order
+	{
+		for (int i = 0; i < list.size(); i++)
+			for (int j = i + 1; j < list.size(); j++)
+				if (list[i]->postOrderNum < list[j]->postOrderNum)
+					swap(list[i], list[j]);
+	}
+
+	vector<Vertex*>  reverseGraph()
+	{
+		vector<Vertex*> revAdjList(adjList.size());
+		for (int i = 0; i < adjList.size(); i++)
+		{
+			revAdjList[i] = new Vertex;
+			revAdjList[i]->label = i;
+			revAdjList[i]->postOrderNum = adjList[i]->postOrderNum;
+		}
+		for (auto x : adjList)
+			for (auto y : x->adj)
+				revAdjList[y->label]->adj.push_back(revAdjList[x->label]);
+
+		return revAdjList;
+	}
+	void printComponents()
+	{
+		for (int i = 0; i < adjList.size(); i++)
+			cout << i << " " << adjList[i]->component << endl;
+	}
+
+	void stronglyConnected()
+	{
+		vector<Vertex*> revAdjList; // hold the reverse graph
+		int componentNum = 0;
+		int i = 0;
+		int lastProcessed = 0;
+
+		postOrder();// compute the post order visit number for each vertex
+		revAdjList = reverseGraph(); // create the reverse graph
+		sort(revAdjList);
+		do
+		{
+			i = lastProcessed++;
+			while (i < revAdjList.size() && revAdjList[i]->component >= 0)
+				i++;
+			lastProcessed = i;
+			if (i < adjList.size())
+				reachable(revAdjList[i], componentNum++, revAdjList);
+		} while (i < adjList.size());
+	}
+
+
+	void readIn()
+	{
+		int numVerts;
+		int outDegree;
+		int adjLabel;
+		double weight;
+		Vertex* vertex;
+
+		cin >> numVerts;
+		for (int i = 0; i < numVerts; i++)
+		{
+			vertex = new Vertex;
+			adjList.push_back(vertex);
+		}
+		for (int i = 0; i < numVerts; i++)
+		{
+			cin >> outDegree;
+			adjList[i]->label = i;
+			for (int j = 0; j < outDegree; j++)
+			{
+				cin >> adjLabel;
+				adjList[i]->adj.push_back(adjList[adjLabel]);
+			}
+		}
+	}
+};
+
+int main()
+{
+
+	Graph graph;
+
+
+	graph.readIn();
+	graph.stronglyConnected();
+	graph.printComponents();
+	system("pause");
+	return 0;
+}
+/* figure 9.86 (A is 0, B is 1, and so on)
+7
+2 1 2
+3 2 4 6
+2 3 4
+2 0 5
+2 3 5
+0
+1 4
+*/

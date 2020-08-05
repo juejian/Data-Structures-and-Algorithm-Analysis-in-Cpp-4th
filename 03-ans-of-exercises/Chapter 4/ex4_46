@@ -1,0 +1,22 @@
+bool Isomorphic(vector<TreeNode>T1, vector<TreeNode>T2, int r1, int r2) {
+	if (r1 == nullptr && r2 == nullptr) {
+		return true;
+	}
+	if (r1 == nullptr && r2 != nullptr || r1 != nullptr && r2 == nullptr) {
+		return false;
+	}
+	if (T1[r1].data != T2[r2].data)
+	{
+		return false;
+	}
+	if (T1[r1].left == nullptr && T2[r2].left == nullptr) {
+		return Isomorphic(T1, T2, T1[r1].right, T2[r2].right);
+	}
+	if ((T1[r1].left != nullptr) && (T2[r2].left != nullptr) && (T1[T1[r1].left]).data == (T2[T2[r2].left]).data) {
+		return (Isomorphic(T1, T2, T1[r1].left, T2[r2].left) && Isomorphic(T1, T2, T1[r1].right, T2[r2].right));
+	}
+	else
+	{
+		return (Isomorphic(T1, T2, T1[r1].left, T2[r2].right) && Isomorphic(T1, T2, T1[r1].right, T2[r2].left));
+	}
+}

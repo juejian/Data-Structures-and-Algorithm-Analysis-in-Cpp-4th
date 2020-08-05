@@ -1,0 +1,18 @@
+//只执行一次two-way comparison即是只比较一次大小，其余用递归完成
+template<typename Comparable>
+int binarySearch(const vector<Comparable>& a, cosnt Comparable& x,int low,int high)
+{
+	int mid;
+	if (low > high)
+		return -1;
+	else {
+		mid = (low + high) / 2;
+		if (a[mid] == x)
+			return mid;
+		else if (a[mid] < x)
+			return binarySearch(a, x, mid + 1, high);//后半部分
+		else
+			return binarySearch(a, x, low, mid - 1);//前半部分
+	}
+	
+}

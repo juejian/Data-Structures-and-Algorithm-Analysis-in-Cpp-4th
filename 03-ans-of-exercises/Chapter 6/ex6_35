@@ -1,0 +1,75 @@
+//base on Figure 6.55
+//判断了h1和h2的大小，总是令lager为h1，满足条件b
+//在循环的时候增加了carry和h2.size的条件以跳出循环，满足条件a
+BinQueue merge(BinQueue & h1, BinQueue & h2) {//h2合并到h1当中
+	if (h1 == h2)
+		return h1;
+	BinTree t1, t2;
+	BinTree carry = NULL;
+	int carrt_tag;
+	if (h1->currentSize + h2->currentSize > CAPACITY)
+		Error("TOO MUCH ELEM");
+	if (h1->currentSize < h2->currentSize) {
+		//互换
+		BinQueue temp;
+		temp = h1;
+		h1 = h2;
+		h2 = temp;
+	}
+	h1->currentSize += h2->currentSize;
+	int h2Size = 0;
+	for (int i = 0, j = 1; j <= h1->currentSize; i++, j *= 2) {//统计h2中树的数量
+		if (h2->theTrees[i] != NULL)
+			h2Size++;
+	}
+	for (int i = 0, j = 1; (carry || h2Size) && j <= h1->currentSize; i++, j *= 2) {
+		t1 = h1->theTrees[i];
+		t2 = h2->theTrees[i];
+		if (carry)
+			carrt_tag = 1;
+		else
+			carrt_tag = 0;
+		switch (!!t1 + 2 * !!t2 + 4 * carrt_tag) {
+		case 0://t1,t2,carry空
+			break;
+		case 1://t1非空
+			break;
+		case 2://t2非空
+			h1->theTrees[i] = t2;
+			h2->theTrees[i] = NULL;
+			h2Size--;
+			break;
+		case 3://t1,t2非空
+			carry = combineTrees(t1, t2);
+			h1->theTrees[i] = NULL;
+			h2->theTrees[i] = NULL;
+			h2Size--;
+			break;
+		case 4://carry非空
+			h1->theTrees[i] = carry;
+			carry = NULL;
+			break;
+		case 5://t1,carry非空
+			carry = combineTrees(t1, carry);
+			h1->theTrees[i] = NULL;
+			break;
+		case 6://t2, carry非空
+			carry = combineTrees(t2, carry);
+			h2->theTrees[i] = NULL;
+			h2Size--;
+			break;
+		case 7:
+			h1->theTrees[i] = carry;
+			carry = combineTrees(t1, t2);
+			h2->theTrees[i] = NULL;
+			h2Size--;
+			break;
+		default:
+			Error("error");
+			break;
+		}
+	}
+	return h1;
+}
+
+//https://blog.csdn.net/qq789045/article/details/51583771

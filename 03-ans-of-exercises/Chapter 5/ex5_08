@@ -1,0 +1,75 @@
+// Let's simulate linear, quadratic, and cubic probing.
+// Is cubic probing any better than quadratic?
+// In this simulation, cells equal to 0 represent empty, and cells
+// equal to 1 contain some key value.
+#include<iostream>
+#include<vector>
+#include<cmath>
+using namespace std;
+const int SIZE = 9001;           // prime number over 9,000
+const int MAX = 4500;
+
+
+int main()
+{
+	vector<int>linear(SIZE, -1);
+	vector<int>quadratic(SIZE, -1);
+	vector<int>cubic(SIZE, -1);
+
+	int linearCollisions = 0;
+	int quadraticCollisions = 0;
+	int cubicCollisions = 0;
+
+	// We are going to generate random indices to occupy in the hash tables.
+	srand(0);
+	for (int i = 0; i < MAX; ++i)
+	{
+		int hashCode = rand() % SIZE;
+		int offset = 0;
+		while (linear[hashCode] == 1)
+		{
+			++linearCollisions;
+			++offset;
+			hashCode += offset;
+			hashCode %= SIZE;
+		}
+		linear[hashCode] = 1;
+	}
+
+	srand(0);
+	for (int i = 0; i < MAX; ++i)
+	{
+		int hashCode = rand() % SIZE;
+		int offset = 0;
+		while (quadratic[hashCode] == 1)
+		{
+			++quadraticCollisions;
+			++offset;
+			hashCode += offset * offset;
+			if (hashCode >= SIZE)
+				hashCode %= SIZE;
+		}
+		quadratic[hashCode] = 1;
+	}
+	srand(0);
+	for (int i = 0; i < MAX; ++i)
+	{
+		int hashCode = rand() % SIZE;
+		int offset = 0;
+		while (cubic[hashCode] == 1)
+		{
+			++cubicCollisions;
+			++offset;
+			hashCode += offset * offset * offset;
+			if (hashCode >= SIZE)
+				hashCode %= SIZE;
+		}
+		cubic[hashCode] = 1;
+	}
+
+	cout << "Here is the number of collisions for each type of probing.\n";
+	cout << "linear = " << linearCollisions << endl;
+	cout << "quadratic = " << quadraticCollisions << endl;
+	cout << "cubic = " << cubicCollisions << endl;
+	return 0;
+}

@@ -1,0 +1,53 @@
+#include<iostream>
+using namespace std;
+
+void print(int arr[], int n)
+{
+	for (int j = 0; j < n; j++)
+	{
+		cout << arr[j] << "  ";
+	}
+	cout << endl;
+}
+void bubble_sort(int array[], int n)//冒泡排序
+{
+	for (int i = 0; i < n - 1; ++i) {
+		for (int j = 0; j < n - 1 - i; ++j) {
+			if (array[j] > array[j + 1]) {
+				int temp = array[j];
+				array[j] = array[j + 1];
+				array[j + 1] = temp;
+			}
+		}
+	}
+}
+void insertion_sort(int arr[],int n)//插入排序
+{
+	for (int j = 1; j < n; ++j)
+	{
+		int key = arr[j];
+		int i = j - 1;
+		while (i >= 0 && key < arr[i]) {
+			arr[i + 1] = arr[i];
+			--i;
+		}
+		arr[i + 1] = key;
+	}
+}
+
+int main()
+{
+	int s1[10] = { 8,1,9,7,2,4,5,6,10,3 };
+	int s2[10] = { 8,1,9,7,2,4,5,6,10,3 };
+	cout << "冒泡排序初始序列：";
+	print(s1, 10);
+	bubble_sort(s1, 10);
+	cout << "排序结果：";
+	print(s1, 10);
+	cout << "插入排序初始序列：";
+	print(s2, 10);
+	insertion_sort(s2,10);
+	cout << "排序结果：";
+	print(s2, 10);
+	system("pause");
+}

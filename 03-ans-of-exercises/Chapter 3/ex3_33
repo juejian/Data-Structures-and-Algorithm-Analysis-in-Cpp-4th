@@ -1,0 +1,35 @@
+template<typename Object>
+class queue
+{
+public:
+	queue(int s) :maxSize(s), front(0), rear(0) { elements.resize(maxSize); }
+	queue() {
+		maxSize = 100; front = 0;
+		rear = 0; elements.resize(maxSize);
+	}
+	~queue() { while (front != rear)deque(); }
+	void enque(Object obj)
+	{
+		if (!full())
+		{
+			elements[rear] = obj;
+			rear = (rear + 1) % maxSize;//circular array
+		}
+	}
+	Object deque()
+	{
+		Object temp;
+		if (!empty())
+		{
+			temp = elements[front];
+			front = (front + 1) % maxSize;//circular array
+			return temp;
+		}
+	}
+	bool empty() { return front == rear; }
+	bool full() { return(rear + 1) % maxSize == front; }//the queue is full when there are theArray.capcacity()-1 elements
+private:
+	int front, rear;
+	int maxSize;
+	vector<Object>elements;
+};

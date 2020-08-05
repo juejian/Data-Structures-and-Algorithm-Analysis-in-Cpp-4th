@@ -1,0 +1,144 @@
+/*
+   Finds single source shortest path for a weighted graph stored as adjacency list
+   Assumes vertex labels are integers from 0 to |V| -1
+   input format:
+   The first line contains the number of vertices n
+   Each of the next n lines starts with the outdegree of that vertex (m) followed by m
+   label, edge weight pairs.
+   -1 represents infinity
+*/
+#include<iostream>
+#include<vector>
+using namespace std;
+
+struct Vertex
+{
+	int label;
+	bool known;
+	double dist;
+	vector<double> weight;
+	vector<int> adj;
+	int prevVert;
+	Vertex(int name = 0) { label = name; known = false; dist = -1; prevVert = -1; }
+};
+
+class Graph
+{
+private:
+	vector<Vertex> adjList;
+
+public:
+	Graph() {}
+
+	void insert(Vertex  V)
+	{
+		adjList.push_back(V);
+	}
+
+	/**
+	* Print shortest path to v after dijkstra has run.
+	* Assume that the path exists.
+	*/
+	void printPath(int v)
+	{
+		if (adjList[v].prevVert >= 0)
+		{
+			printPath(adjList[v].prevVert);
+			cout << " to ";
+		}
+		cout << v;
+	}
+	int getSmallDistIndex()
+	{
+		int minIndex = -1;
+		for (int i = 0; i < adjList.size(); i++)
+			if (adjList[i].dist >= 0 && !adjList[i].known
+				&& (minIndex < 0 || adjList[i].dist < adjList[minIndex].dist))
+				minIndex = i;
+		return minIndex;
+	}
+	/**
+	* Dijkstras algorithm
+	*
+	*/
+
+	void dijkstra(int s)
+	{
+		int numProcessed = 0;
+		adjList[s].dist = 0;
+		for (int k = 0; k < adjList.size(); k++)
+		{
+			int v = getSmallDistIndex();
+			adjList[v].known = true;
+			for (int i = 0; i < adjList[v].adj.size(); i++)
+			{
+				int w = adjList[v].adj[i];
+				if (!adjList[w].known)
+				{
+					double cvw = adjList[v].weight[i];
+					if (adjList[w].dist < 0 || adjList[v].dist + cvw < adjList[w].dist)
+					{
+						// Update w
+						adjList[w].dist = adjList[v].dist + cvw;
+						adjList[w].prevVert = v;
+					}
+				}
+			}
+		}
+	}
+
+	void readIn()
+	{
+		int numVerts;
+		int outDegree;
+		int adjLabel;
+		double weight;
+		Vertex vertex;
+
+		cin >> numVerts;
+		for (int i = 0; i < numVerts; i++)
+		{
+			cin >> outDegree;
+			vertex.label = i;
+			for (int j = 0; j < outDegree; j++)
+			{
+				cin >> adjLabel;
+				vertex.adj.push_back(adjLabel);
+				cin >> weight;
+				vertex.weight.push_back(weight);
+			}
+			insert(vertex);
+			vertex.adj.clear();
+			vertex.weight.clear();
+		}
+	}
+};
+
+int main()
+{
+
+	Graph graph;
+	int start;
+	int finish;
+
+	graph.readIn();
+	cout << "Enter a vertex to start: ";
+	cin >> start;
+	graph.dijkstra(start);
+
+	cout << "Enter a vertex to end: ";
+	cin >> finish;
+	graph.printPath(finish);
+
+	return 0;
+}
+/* Figure 9.20
+7
+2 3 1 1 2
+2 4 10 3 3
+2 0 4 5 5
+4 2 2 5 8 6 4 4 2
+1 6 6
+0
+1 5 1
+*/

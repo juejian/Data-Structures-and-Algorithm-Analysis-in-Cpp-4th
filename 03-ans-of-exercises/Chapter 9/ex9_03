@@ -1,0 +1,104 @@
+/*
+   Finds a topological sort for a graph stored as adjacency list
+   Since the STL priority queue does not support decrease key
+   we use a vector of indegrees
+   Assumes vertices are labeled 0 - (|V| -1)
+   input format:
+   #vertices
+   outDegree of vertex 0   vertices reached from 0
+   outDegree of vertex 1   vertices reached from 1
+	  :
+   outDegree of vertex |V|-1   vertices reached from |V|-1
+*/
+#include<iostream>
+#include<vector>
+using namespace std;
+
+struct Vertex
+{
+	int label;
+	vector<int> adj;
+};
+
+class Graph
+{
+private:
+	vector<Vertex> adjList;
+	vector<int>    indegrees;
+public:
+	Graph(int size) : indegrees(size, 0) {}
+	Graph() {}
+	void resize(int size)
+	{
+		indegrees.resize(size);
+		for (int i = 0; i < size; i++)
+			indegrees[i] = 0;
+	}
+	void insert(Vertex  V)
+	{
+		adjList.push_back(V);
+		for (int i = 0; i < V.adj.size(); i++)
+			indegrees[V.adj[i]]++;
+	}
+	int getMinDegIndex()
+	{
+		int minDeg = 0;
+		for (int i = 1; i < indegrees.size(); i++)
+			if (indegrees[minDeg] > indegrees[i])
+				minDeg = i;
+		return minDeg;
+	}
+	void topSort()
+	{
+
+		int minDeg = getMinDegIndex();
+		while (indegrees[minDeg] == 0)
+		{
+			cout << minDeg << " ";
+			indegrees[minDeg] = 2 * indegrees.size();
+			for (auto x : adjList[minDeg].adj)
+			{
+				if (indegrees[x] > 0)
+					indegrees[x]--;
+				else
+					indegrees[x] = 2 * indegrees.size();//排除已处理的vertexs
+			}
+			minDeg = getMinDegIndex();
+		}
+		cout << endl;
+	};
+	void readIn()
+	{
+		int numVerts;
+		int outDegree;
+		int adjLabel;
+		Vertex vertex;
+
+		cin >> numVerts;
+		resize(numVerts);
+		for (int i = 0; i < numVerts; i++)
+		{
+			cin >> outDegree;
+			vertex.label = i;
+			for (int j = 0; j < outDegree; j++)
+			{
+				cin >> adjLabel;
+				vertex.adj.push_back(adjLabel);
+			}
+			insert(vertex);
+			vertex.adj.clear();
+		}
+	}
+};
+
+int main()
+{
+
+	Graph graph;
+
+
+	graph.readIn();
+	graph.topSort();
+
+	return 0;
+}

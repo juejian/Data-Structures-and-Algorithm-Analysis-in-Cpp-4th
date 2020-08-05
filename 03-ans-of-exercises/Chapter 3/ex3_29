@@ -1,0 +1,17 @@
+//Assuming no header and that first is not NULL
+Node* reverseList(Node* first)
+{
+	Node* currentPos, * nextPos, * previousPos;
+	previousPos = NULL;
+	currentPos = first;
+	nextPos = first->next;
+	while (nextPos != NULL)
+	{
+		currentPos->next = previousPos;
+		previousPos = currentPos;
+		currentPos = nextPos;
+		nextPos = nextPos->next;
+	}
+	currentPos->next = previousPos;
+	return currentPos;
+}

@@ -1,0 +1,162 @@
+#include <iostream> 
+#include <vector> 
+#include <string> 
+#include <fstream> 
+#include <cmath> 
+using namespace std;
+const int INFINTY = 99999;
+struct Vertex 
+{ 
+	vector<int> adj; 
+	vector<int> weight; 
+	bool known; 
+	int dist; 
+	string name; 
+	int path; 
+};
+// Prints the shortest path 
+void printPath( int vIndex, vector<Vertex> V ) 
+{
+	if( vIndex >=0 && V[vIndex].path > -1 ) 
+	{ 
+		printPath( V[vIndex].path, V );
+		cout << " to ";
+	} 
+	cout << V[vIndex].name; 
+}
+// Finds the shortest path from the vertex at sIndex to tIndex 
+void dijkstra(int sIndex, int tIndex, vector <Vertex>& Vertices) 
+{
+	int smallestDist; 
+	int smallestVertex; 
+	Vertex v, s, t; 
+	int n = Vertices.size();
+	Vertices[sIndex].dist = 0; 
+	for (; ; ) 
+	{
+		smallestDist = INFINTY; 
+		smallestVertex = -1;
+		for (int i = 0; i < n; i++) 
+		{ 
+			if (!Vertices[i].known && Vertices[i].dist < smallestDist) 
+			{ 
+				smallestDist = Vertices[i].dist; 
+				smallestVertex = i; 
+			} 
+		} 
+		if (smallestVertex < 0 || smallestVertex == tIndex) break;
+		Vertices[smallestVertex].known = true; 
+		v = Vertices[smallestVertex];
+		for (int j = 0; j < v.adj.size(); j++) 
+			if (!(Vertices[v.adj[j]].known)) 
+				if (v.dist + v.weight[j] < Vertices[v.adj[j]].dist) 
+				{ 
+					// Update w 
+					Vertices[ v.adj[j] ].dist = v.dist + v.weight[j]; 
+					Vertices[ v.adj[j] ].path = smallestVertex; 
+				}
+	}
+}
+//Fills the vector of words verticies 
+vector<Vertex> readWords( istream & in ) 
+{ 
+	string oneLine; 
+	vector<Vertex> v; 
+	Vertex w; 
+	while( in >> oneLine ) 
+	{ 
+		w.name = oneLine; 
+		w.known = false; 
+		w.path = -1; 
+		w.dist = INFINTY; 
+		v.push_back( w ); 
+	} 
+	return v; 
+}
+// Returns 1 if word1 and word2 are the same length
+// and differ in only one character. 
+// Returns p if word1 and word2 differ in length by 1 and 
+// but are otherwise identical. 
+// return 0 other wise
+int oneCharOff(const string& word1, const string& word2, int p) 
+{
+	string big, small, shrink; 
+	int cost; 
+	//cout<< "comparing : 
+	if( abs ((int)(word1.length( )- word2.length( )))> 1 )
+		return 0; 
+	else if (word1.length() == word2.length()) 
+	{ 
+		int diffs = 0;
+		for (int i = 0; i < word1.length(); i++) 
+			if (word1[i] != word2[i]) 
+				if (++diffs > 1) 
+					return 0; 
+		if (diffs == 1)
+			return 1;
+    }
+	if (word2.length() > word1.length()) 
+	{ 
+		big = word2; 
+		small = word1; 
+	}
+	else 
+	{ 
+		big = word1; 
+		small = word2; 
+	} 
+	for (int i = 0; i < big.length() - 1; i++) 
+	{ 
+		shrink = big.substr(0, i) + big.substr(i + 1, big.size() - i - 1); 
+		if (shrink == small) 
+			return p; 
+	} 
+	if (big.substr(0, big.size() - 1) == small) 
+		return p; 
+	else 
+		return 0;
+}
+//fills the adjacencies lists for all words in the dictionary 
+void fillAdjacencies(vector<Vertex>& words, int p)
+{
+	int cost; 
+	for (int i = 0; i < words.size(); i++)
+		for (int j = i + 1; j < words.size(); j++) 
+		{
+			cost = oneCharOff(words[i].name, words[j].name, p); 
+			if (cost > 0) 
+			{ 
+				// word i and j are adjacent with weight cost 
+				words[i].adj.push_back(j); 
+				words[i].weight.push_back(cost); 
+				words[j].adj.push_back(i); 
+				words[j].weight.push_back(cost); 
+			} 
+		}
+}
+int main() 
+{
+	int p; 
+	ifstream fin("dict.txt"); 
+	string w1, w2; 
+	int w1Index, w2Index;
+	cout << "what is the cost of single char deletions: "; 
+	cin >> p; 
+	vector<Vertex> words = readWords(fin);
+	do {
+		cout << "Enter two words in the dictionary: ";
+		cin >> w1 >> w2; 
+		// Find their indices (here is where a map would be superior 
+		// However all other access are now in O(1) time
+		for (w1Index = 0; w1Index < words.size() 
+			&& words[w1Index].name != w1; w1Index++); 
+		for (w2Index = 0; w2Index < words.size() 
+			&& words[w2Index].name != w2; w2Index++);
+	} while (w1Index >= words.size() || w2Index >= words.size());
+	fillAdjacencies(words, p); // make the adjacency list 
+	dijkstra( w1Index , w2Index, words); // use dijkstra’s algorithm 
+	cout<<endl; 
+	printPath(w2Index, words); // print the result
+	//system("pause"); 
+	return 0;
+}

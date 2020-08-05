@@ -1,0 +1,15 @@
+//assume the existence of a method randInt(lower,upper),that generates a uniform random integer in the appropriate closed interval
+Node* makeRandomTree(int lower, int upper)
+{
+	Node* t = NULL;//新节点
+	int randomValue;
+	if (lower <= upper)//在这范围内产生随机数
+		t = new Node(randomValue = randInt(lower, upper),
+			makeRandomTree(lower, randomValue - 1),//左儿子小于
+			makeRandomTree(randomValue + 1, upper));//右耳子大于
+	return t;
+}
+Node* makeRandomTree(int n)
+{
+	return makeRandomTree(1, n);
+}

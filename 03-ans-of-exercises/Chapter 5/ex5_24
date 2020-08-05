@@ -1,0 +1,86 @@
+template <typename AnyType>
+class HopScotchHash
+{
+private:
+	vector<HashEntry<AnyType>> table;
+	int myHash(const AnyType& x) const
+	{
+		return ((int)x) % table.size();
+	}
+	bool shiftDown(int home, int open, AnyType& x)
+	{
+		int i = open - MAX_DIST;
+		int pos = (1 << MAX_DIST);
+		int D = table.size();
+		int tempHome;
+		AnyType temp;
+
+		while (i < open && table[(home + i) % D].hop>0)
+			i++;
+		if (i >= open) return false;
+		else
+		{
+			if (i < MAX_DIST)
+			{
+				table[(home + i) % D].element = x;
+				table[(home + i) % D].isActive = true;
+				table[home].hop = table[home].hop | (pos >> i);
+				return true;
+			}
+			else
+			{
+				temp = table[(home + i) % D].element;
+				tempHome = myHash(temp);
+				if (shiftDown(tempHome, i, temp))//？
+				{
+					table[(home + open) % D].element = temp;
+					table[tempHome].hop = table[tempHome].hop ^ (1 << (home + open - tempHome) % D) |
+						(1 << (home + open - tempHome));
+					return true;
+				}// end if
+				return false;
+			}//end else
+		}// end else
+	}// end shiftdown
+	bool insert1(AnyType & x)
+	{
+		int pos = (1 << MAX_DIST);
+		int home = myHash(x);
+		int D = table.size();
+		int diff = 0;
+		while (diff < table.size() && table[(home + (diff)) % D].isActive)
+			diff++;
+		if (diff >= table.size())
+			return false;
+		else if (diff <= MAX_DIST)
+		{
+			table[(home + diff) % D].element = x;
+			table[(home + diff) % D].isActive = true;
+			table[home].hop = table[home].hop | (pos >> diff);
+			return true;
+		}
+		else // need to relocate something else
+		{
+			return shiftDown(home, home + diff, x);
+		}
+
+	}// end of insert
+public:
+	HopScotchHash(int size = 11)
+	{
+		table.resize(size);
+	}
+	bool insert(AnyType & x)
+	{
+		if (!insert1(x))
+		{
+			HopScotchHash<AnyType> temp(table.size() * 2);
+			for (int i = 0; i < table.size(); i++)
+				temp.insert(table[i].element);
+			table = temp.table;
+			insert(x);
+		}
+		return true;
+	}
+
+};

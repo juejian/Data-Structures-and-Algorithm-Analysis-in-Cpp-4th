@@ -1,0 +1,124 @@
+/** Exercise738.c++
+ *  Given N points in the plane, we are to find 4 of them that
+ *  are collinear.  The algorithm needs to be O(n^2 log_2 n).
+ *  The algorithm proceeds as follows.
+ *  1.  For each pair of points, compute the slope/y-intercept.
+ *      We now have N^2 objects to consider.
+ *  2.  Sort the pairs of points.  Using the STL,
+		this can be done in O(N^2 log (N^2)) time which
+ *      equals O(N^2 log N) time (since the coefficient 2 comes out).
+ *  3.  Once the list of N^2 pairs of points has been sorted, we can
+ *      find a collinear set of four by a single traversal of this list.
+ *      This means it can be done in O(N^2) time.  We just need to look
+ *      at three consecutive pairs to find the 4 desired points.
+ */
+#include <vector>
+#include <algorithm>
+#include <iostream>
+using namespace std;
+
+const double EPSILON = 0.000001;
+const double INF = 9999999.;
+
+struct Point
+{
+	double x;
+	double y;
+	bool operator < (const Point& point)
+	{
+		if (x != point.x)
+			return x < point.x;
+		else
+			return y < point.y;
+	}
+	bool operator == (const Point & point)
+	{
+		return (x == point.x && y == point.y);
+	}
+};
+class Line
+{
+private:
+	Point p1; // point 1
+	Point p2;// point 2
+	double slope;
+	double yInter;
+public:
+	Line(Point one, Point two) :p1(one), p2(two)
+	{
+		slope = computeSlope(p1, p2);
+		if (slope != INF)
+			yInter = p1.y - slope * p1.x;
+		else
+			yInter = p1.x; // for vertical lines use x-inter
+	}
+	double computeSlope(Point p1, Point p2)
+	{
+		if (fabs(p1.x - p2.x) < EPSILON)
+			return INF;
+		else
+			return (p2.y - p1.y) / (p2.x - p1.x);
+	}
+	bool operator< (const Line & line)
+	{
+		if (fabs(slope - line.slope) > EPSILON)
+			return slope < line.slope;
+		else
+			return yInter < line.yInter;
+	}
+	double getSlope() { return slope; }
+	double getYInter() { return yInter; }
+	Point getP1() { return p1; }
+	Point getP2() { return p2; }
+};
+void printPoints(vector<Point> collinear)
+{
+	vector<Point>::iterator it;
+	int count = 0;
+	it = unique(collinear.begin(), collinear.end());
+	for (vector<Point>::iterator itr = collinear.begin(); itr != it; itr++)
+		count++;
+	if (count > 3)
+		for (vector<Point>::iterator itr = collinear.begin(); itr != it; itr++)
+			cout << "(" << itr->x << "," << itr->y << ")\n";
+}
+int main()
+{
+	vector<Point> points;
+	vector<Line*> lines;
+	vector<Point> collinear;
+	int numPoints;
+	Line* line;
+	cout << "how many points: ";
+	cin >> numPoints;
+	points.resize(numPoints);
+	for (int i = 0; i < numPoints; i++)
+	{
+		cout << "enter the x and y coordinates for the " << i << "th point :";
+		cin >> points[i].x >> points[i].y;
+	}
+	for (int i = 0; i < points.size(); i++) {
+		for (int j = i + 1; j < points.size(); j++)
+		{
+			line = new Line(points[i], points[j]);
+			lines.push_back(line);
+		}
+	}
+	sort(lines.begin(), lines.end());
+	for (int i = 0; i < lines.size() - 1; i++)
+	{
+		if (lines[i]->getSlope() == lines[i + 1]->getSlope() &&
+			lines[i]->getYInter() == lines[i + 1]->getYInter())
+		{
+			collinear.push_back(lines[i]->getP1());
+			collinear.push_back(lines[i]->getP2());
+			collinear.push_back(lines[i + 1]->getP1());
+			collinear.push_back(lines[i + 1]->getP2());
+		}
+		else
+		{
+			printPoints(collinear);
+			collinear.clear();
+		}
+	}
+}

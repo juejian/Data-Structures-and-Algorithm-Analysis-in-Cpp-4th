@@ -1,0 +1,48 @@
+template<typename Comparable>
+struct BiQueNode
+{
+	Comparable item;
+	vector<BiQueNode*> pointers;
+	BiQueNode<Comparable>(Comparable e) : item(e) {}
+};
+template <typename Comparable>
+class BinomalQue
+{
+private:
+	vector<BiQueNode<Comparable>> biQue;
+};
+
+template <typename Comparable>
+BiQueNode<Comparable>* combine(BiQueNode<Comparable>* p, BiQueNode<Comparable>* q)
+{
+	if (p->item < q->item)
+	{
+		p->pointers.push_back(q);
+		return p;
+	}
+	else
+	{
+		q->pointers.push_back(p);
+		return q;
+	}
+}
+
+template <typename Comparable>
+BiQueNode<Comparable>* insert(Comparable v)
+{
+	BiQueNode<Comparable>* t = new BiQueNode<Comparable> v;
+	BiQueNode<Comparable>* c = t;
+	for (int i = 0; i <= biQue.size(); i++)
+	{
+		if (c == nullptr) break;
+		if (i == biQue.size() - 1)
+			biQue.push_back(nullptr);
+		if (biQue[i] == nullptr)
+		{
+			biQue[i] = c; break;
+		}
+		c = combine(c, bq[i]);
+		bique[i] = null;
+	}
+	return t;
+}

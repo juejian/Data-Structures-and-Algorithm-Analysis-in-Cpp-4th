@@ -1,0 +1,32 @@
+Node* makeRandomTree(int lower, int upper)
+{
+	Node* t = NULL;
+	int randomValue;
+	if (lower <= upper)
+		t = new Node(randomValue = (lower + upper) / 2,
+			makeRandomTree(lower, randomValue - 1),
+			makeRandomTree(randomValue + 1, upper));
+	return t;
+}
+Node* makeRandomTree(int n)
+{
+	return makeRandomTree(1, n);
+}
+//the other way
+Node* genTree(int height, int& lastNode)
+{
+	Node* t = NULL;
+	if (height >= 0)
+	{
+		t = new Node;
+		t->left = genTree(height - 1, lastNode);
+		t->element = ++lastNode;
+		t->right = genTree(height - 1, lastNode);
+	}
+	return t;
+}
+Node* minAvlTree(int h)
+{
+	int lastNodeAssigned = 0;
+	return genTree(h, lastNodeAssigned);
+}

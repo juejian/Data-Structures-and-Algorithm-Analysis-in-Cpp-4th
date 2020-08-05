@@ -1,0 +1,35 @@
+template <typename HashedObj, typename Object>
+class Pair
+{
+public:
+	Pair(HashedObj k, Object d) : key(k), def(d) {}
+private:
+	HashedObj key;
+	Object def;
+	// Appropriate Constructors, etc.
+};
+
+template <typename HashedObj, typename Object>
+class Dictionary
+{
+public:
+	Dictionary() {}
+	void insert(const HashedObj& key, const Object& definition)
+	{
+		items.insert(Pair<HashedObj, Object>(key, definition));
+	}
+	const Object& lookup(const HashedObj& key) const
+	{
+		return items.contains(key);
+	}
+	bool isEmpty() const
+	{
+		return items.isEmpty();
+	}
+	void makeEmpty()
+	{
+		items.makeEmpty();
+	}
+private:
+	HashTable<Pair<HashedObj, Object> > items;
+};

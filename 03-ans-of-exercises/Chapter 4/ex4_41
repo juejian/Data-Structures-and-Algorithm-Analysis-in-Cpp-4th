@@ -1,0 +1,16 @@
+void printTree(BinaryTree* arr[])
+{
+	queue<BinaryTree*> rel;//定义一个队列，数据类型是二叉树指针
+	rel.push(arr[0]);
+	while (!rel.empty())
+	{
+		BinaryTree* front = rel.front;
+		cout << front->element;
+		rel.pop();//删除最前面的节点
+		if (front->left != nullptr)//判断最前面的左节点是否为空，不是则放入队列中
+			rel.push(front->left);
+		if (front->right != nullptr)//判断最前面的右节点是否为空，不是则放入队列中
+			rel.push(front->right);
+	}
+}
+//https://blog.csdn.net/FX677588/article/details/74276513

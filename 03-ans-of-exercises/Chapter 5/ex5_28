@@ -1,0 +1,121 @@
+/*
+Extensible hashing
+ Assumes the number of bits is INT_BITS
+*/
+
+#include <iostream>
+#include <algorithm>
+#include <cmath>
+#include <vector>
+using namespace std;
+
+const int BLOCKSIZE = 4;
+const int INT_BITS = 32;
+struct Node
+{
+	vector<int> data;
+	Node() { }
+};
+struct Directory
+{
+	vector<Node*> pointers;
+	int numSigBits;
+	Directory() {};
+	Directory(int size)
+	{
+		resize(size);
+		numSigBits = floor(log(size) / log(2) + .5);
+	}
+	int size() { return pointers.size(); }
+	void resize(int size)
+	{
+		pointers.resize(size);
+		for (auto& p : pointers)
+			p = nullptr;
+		numSigBits = floor(log(size) / log(2) + .5);
+	}
+};
+
+class ExtendHash
+{
+private:
+	Directory directory;
+	int getKey(int data, int size)
+		// returns the first size bits of data as 
+		// base 10 integer
+	{
+		data = data >> (INT_BITS - size);
+		return data;
+	}
+	void doubleDirect()
+	{
+		Directory temp(2 * directory.size());
+		for (int i = 0; i < directory.size(); i++)
+		{
+			temp.pointers[2 * i] = directory.pointers[i];
+			temp.pointers[2 * i + 1] = directory.pointers[i];
+		}
+		directory.numSigBits = directory.numSigBits + 1;
+		directory.pointers = temp.pointers;
+	}
+public:
+	ExtendHash() { directory.resize(2); directory.numSigBits = 1; }
+	void insert(int d)
+	{
+		int key = getKey(d, directory.size());
+		while (key >= directory.size())
+		{
+			doubleDirect();
+			key = getKey(d, directory.numSigBits);
+		}
+
+		Node* p = directory.pointers[key];
+		if (directory.pointers[key] == nullptr)
+		{
+			directory.pointers[key] = new Node();
+			p = directory.pointers[key];
+		}
+		if (p->data.size() < BLOCKSIZE)
+			p->data.push_back(d);
+		else
+		{
+			for (int i = 0; i < directory.pointers.size(); i++)
+				if (i != key && directory.pointers[key] == directory.pointers[i])
+				{
+					vector<int> tempBlock = p->data;
+					p->data.clear();
+					directory.pointers[i] = new Node;
+					for (auto x : tempBlock)
+						insert(x);
+					insert(d);
+					return;
+				}
+			doubleDirect();
+			insert(d);
+		}
+	}
+	void print()
+	{
+		for (int i = 0; i < directory.pointers.size(); i++)
+		{
+			cout << "block #" << i << endl;
+			if (directory.pointers[i] != nullptr)
+			{
+				for (auto x : directory.pointers[i]->data)
+					cout << x << endl;
+			}
+		}
+	}
+};
+
+int main()
+{
+	ExtendHash table;
+	for (int i = 0; i < 30; i++)
+	{
+		table.insert(i * 8);
+	}
+	table.print();
+	system("pause");
+	return 0;
+}

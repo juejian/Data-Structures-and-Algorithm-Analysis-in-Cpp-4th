@@ -1,0 +1,85 @@
+// To mimic the "classic" cuckoo hash table, as shown in the examples 
+// given in Figures 5.26-5.33 in the text,
+
+#include<string>
+#include<vector>
+#include<cmath>
+#include<iostream>
+using namespace std;
+const int LOGICAL_SIZE = 13;
+
+class CuckooHashTable
+{
+private:
+	vector<vector<string>>  contents;
+	int currentSize;
+public:
+	CuckooHashTable() :contents(LOGICAL_SIZE)
+	{
+		for (int i = 0; i < LOGICAL_SIZE; i++)
+			contents[i].resize(2);
+		currentSize = 0;
+	}
+
+	void makeEmpty()
+	{
+		for (int i = 0; i < contents.size(); ++i)
+			for (int j = 0; j < contents[0].size(); ++j)
+				contents[i][j] = "";
+	}
+
+	int hashCode(string value) // based on Javas hash value
+	{
+		int total = 0;
+		for (int i = 0; i < value.size(); i++)
+			total += value[i] * pow(31, value.size() - i - 1);
+		return total;
+	}
+
+	// For Cuckoo hashing, we need to be ready to compute the value
+	// of an n-th hash code.  Multiply the string's native hash code
+	// by the table number (e.g. 1 or 2...), and mod by the logical size.
+	// Here, we consider the "table number" to start at 1 because it
+	// would undesirable to multiply by 0.
+	int hashCode(string value, int which)
+	{
+		return (hashCode(value) * (which + 1)) % LOGICAL_SIZE;
+	}
+
+	void add(string value)
+	{
+		cout << "Entering add() with value = " << value << endl;
+
+		// The item automatically goes into the first logical table,
+		// i.e. the first column of our representation.
+		// But doing so may displace whoever is currently there.
+		int desiredCol = 0;
+		int desiredRow = hashCode(value, desiredCol);
+
+		while (true)
+		{
+			cout << "contents[" << desiredRow << "][" << desiredCol << "] = ";
+			cout << contents[desiredRow][desiredCol] << endl;
+
+			if (contents[desiredRow][desiredCol] == "")
+			{
+				contents[desiredRow][desiredCol] = value;
+				break;
+			}
+
+			// The case of having to evict something already there.
+			else
+			{
+				string victim = contents[desiredRow][desiredCol];
+				contents[desiredRow][desiredCol] = value;
+
+				// Put the victim in its "other" location in the next column.
+				desiredCol = (desiredCol + 1) % contents[0].size();
+				desiredRow = hashCode(value, desiredCol);
+
+				cout << "Need to replace a victim:  " << victim << endl;
+				cout << "  new row/col = [" << desiredRow << "][" << desiredCol << "]\n";
+			}
+		}
+	}
+}; 

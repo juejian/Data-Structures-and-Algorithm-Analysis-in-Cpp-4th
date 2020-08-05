@@ -1,0 +1,17 @@
+//add rbegin and rend
+const_reverse_iterator rbegin()const
+{
+	return const_reverse_iterator itr(tail);
+}
+const_reverse_iterator rend()const
+{
+	const_reverse_iterator itr(head);
+}
+reverse_iterator rbegin()
+{
+	return reverse_iterator itr(tail);
+}
+reverse_iterator rend()
+{
+	reverse_iterator itr(head);
+}

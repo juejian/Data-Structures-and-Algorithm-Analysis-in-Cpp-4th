@@ -1,0 +1,108 @@
+//最小子序列和
+int minSubSum(const vector<int>& a)
+{
+	int minSum = 0, thisSum = 0;
+	for (int j = 0; j < a.size(); ++j)
+	{
+		thisSum += a[j];
+		if (thisSum < minSum)
+			minSum = thisSum;
+		else if (thisSum > 0)
+			thisSum = 0;
+	}
+	return minSum;
+}
+//对Figure 2.8做了一点修改
+
+//最小正子序列
+#define max 100
+
+struct Item {
+	int value;
+	int rank;
+};
+
+bool cmp(const Item& a, const Item& b)
+{
+	return a.value < b.value;
+}
+int operator-(const Item& a, const Item& b)
+{
+	return a.value - b.value;
+}
+bool operator>(const Item& a, const Item& b)
+{
+	return a.rank > b.rank;
+}
+
+int findMaxPositiveSubstr(int arr[], int len)
+{
+	Item* tmp = new Item[len];
+	int sum = 0;
+	int i;
+
+	memset(tmp, 0, sizeof(Item) * len);
+
+	for (int i = 0; i < len; i++) {
+		sum += arr[i];
+		tmp[i].value = sum;
+	}
+	for (i = 0; i < len; i++)
+		tmp[i].rank = i;
+
+	sort(tmp, tmp + len, cmp);
+
+	int result = tmp[0].value > 0 ? tmp[0].value : max;
+
+	for (i = 1; i < len; i++) {
+		if (tmp[i] > tmp[i - 1] && (tmp[i] - tmp[i - 1]) > 0 && (tmp[i] - tmp[i - 1]) < result) {
+			result = tmp[i] - tmp[i - 1];
+		}
+	}
+
+	return result;
+}
+
+//最大子序列乘积
+inline double max(const double& a, const double& b)
+{
+	return (a > b) ? a : b;
+}
+
+double MaxSubsequenceProduct(double a[], int len)
+{
+	double Max = 0.0, pos = 0.0, old = 0.0, nag = 1.0;
+	for (int i = 0; i < len; ++i) {
+		if (a[i] > 1e-6) {
+			pos = max(old * a[i], a[i]);
+			Max = max(Max, pos);
+			if (nag < -1e-6) {
+				nag *= a[i];
+			}
+		}
+		else if (a[i] < -1e-6) {
+			pos = max(0.0, nag * a[i]);
+			Max = max(Max, pos);
+			nag = (old * a[i] > a[i]) ? a[i] : old * a[i];
+		}
+		else {
+			nag = 1.0; pos = 0.0;//?
+		}
+		old = pos;
+	}
+	return Max;
+}
+/*
+思路：
+以元素i结尾序列提供的最大正数记做 pos, 最小负数记做 nag
+a[n] 大于零时:
+pos[n] = max{ pos[n - 1] * a[n], a[n] }
+max_value = max{ max_value, pos[n] }
+若n - 1位置存在最小负数, 更新 nag[n] = nag[n - 1] * a[n]
+a[n] 小于零时 :
+	pos[n] = max{ nag[n - 1] * a[n], 0.0 }
+	max_value = max{ max_value, pos[n] }
+	更新 nag[n] = min{ pos[n - 1] * a[n], a[n] }
+	a[n] 等于零时 :
+	清空 nag[n] 与 pos[n]
+	*/

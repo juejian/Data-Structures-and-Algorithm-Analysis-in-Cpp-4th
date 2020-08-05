@@ -1,0 +1,466 @@
+#pragma once
+#ifndef _ElementType_H
+#define _ElementType_H
+
+struct ElementType {
+	int Coefficient;//系数  
+	int Exponent;//指数  
+};
+
+#endif // ! ElementType_H
+
+
+
+#ifndef _HashQuad_H
+#define _HashQuad_H
+
+typedef unsigned int Index;
+typedef Index Position_hash;
+
+struct HashTbl;
+typedef struct HashTbl* HashTable;
+
+HashTable initializeTable(int tableSize);
+void destroyTable(HashTable h);
+Position_hash find(ElementType key, HashTable h);
+HashTable insert(ElementType key, HashTable h);
+HashTable rehash(HashTable h);
+ElementType retrive(Position_hash p, HashTable h);
+int isLegitimate(Position_hash pos, HashTable h);
+
+#endif
+
+//hashQuad.h
+#include<math.h>
+#include<string.h>
+#define MinTableSize 5
+
+enum KindOfEntry { Legitimate, Empty, Deleted };
+
+struct HashEntry {
+	ElementType element;
+	enum KindOfEntry info;
+};
+
+typedef struct HashEntry Cell;
+
+struct HashTbl {
+	int tableSize;
+	int hasInsertedNum;
+	Cell* theCells;//数组
+};
+
+static int hash(ElementType key, int tableSize) {
+	return key.Exponent % (tableSize);
+}
+
+static Position_hash hash2(ElementType key, int tableSize) {
+	return 7 - (key.Exponent % 7);
+}
+
+static int isPrime(int num) {
+	for (int i = 2; i <= sqrt(num); i++)
+		if (num % i == 0)
+			return 0;
+	return 1;
+}
+static int nextPrime(int num) {
+	int i = num;
+	while (!isPrime(i))
+		i++;
+	return i;
+}
+
+int isLegitimate(Position_hash pos, HashTable h) {
+	return h->theCells[pos].info == Legitimate;
+}
+
+
+HashTable initializeTable(int tableSize) {
+	HashTable h;
+	int i;
+	if (tableSize < MinTableSize) {
+		Error("Table size too small");
+		return NULL;
+	}
+	h = (HashTable)malloc(sizeof(struct HashTbl));
+	if (h == NULL)
+		FatalError("Out of space!!!");
+	h->tableSize = nextPrime(tableSize);
+	h->theCells = (Cell*)malloc(sizeof(Cell) * h->tableSize);
+	h->hasInsertedNum = 0;
+	if (h->theCells == NULL)
+		FatalError("Out of space!!!");
+	for (i = 0; i < h->tableSize; i++) {
+		h->theCells[i].info = Empty;
+	}
+	return h;
+}
+
+void destroyTable(HashTable h) {
+	free(h->theCells);
+	free(h);
+}
+
+Position_hash find(ElementType key, HashTable h) {
+	Position_hash currentPos = hash(key, h->tableSize);
+	int i = 0;
+	while (h->theCells[currentPos].info != Empty && h->theCells[currentPos].element.Exponent != key.Exponent) {
+		currentPos += (++i * hash2(key, h->tableSize));
+		currentPos = currentPos % h->tableSize;
+	}
+	return currentPos;
+}
+
+HashTable insert(ElementType key, HashTable h) {
+	if ((double)h->hasInsertedNum / h->tableSize > 0.5)
+		h = rehash(h);
+	Position_hash pos = find(key, h);
+	if (h->theCells[pos].info == Empty) {
+		h->theCells[pos].element = key;
+		h->theCells[pos].info = Legitimate;
+		h->hasInsertedNum++;
+	}
+	else if (h->theCells[pos].info == Legitimate) {
+		h->theCells[pos].element.Coefficient += key.Coefficient;//同类项合并
+	}
+	return h;
+}
+
+HashTable rehash(HashTable h) {
+	HashTable newH = initializeTable(h->tableSize * 2);
+	for (int i = 0; i < h->tableSize; i++)
+		if (h->theCells[i].info == Legitimate)
+			insert(h->theCells[i].element, newH);
+	destroyTable(h);
+	return newH;
+}
+
+
+
+ElementType retrive(Position_hash p, HashTable h) {
+	return h->theCells[p].element;
+}
+
+
+
+//list.h
+#ifndef _List_H  
+#define _List_H  
+
+struct Node;
+typedef struct Node* PtrToNode_list;
+typedef PtrToNode_list List;
+typedef PtrToNode_list Position_list;
+
+List CreateList();
+List MakeEmpty(List L);
+int IsEmpty(List L);
+int IsLast(Position_list P, List L);
+Position_list Find(ElementType X, List L);
+void Delete(ElementType X, List L);
+Position_list FindPrevious(ElementType X, List L);
+void Insert(ElementType X, Position_list P);
+void DeleteList(List L);
+Position_list Header(List L);
+Position_list First(List L);
+Position_list Advance(Position_list P);
+ElementType Retrieve(Position_list P);
+void deleteNext(Position_list p);
+#endif
+
+//list.cpp
+#include"list.h"
+#include<stdlib.h>
+#include"fatal.h"
+
+
+struct  Node {
+	ElementType Element;
+	Position_list Next;
+};
+
+
+int elementCmp(ElementType e1, ElementType e2) {
+	return e1.Coefficient == e2.Coefficient && e1.Exponent == e2.Exponent;
+}
+
+List CreateList() {
+	List l = (List)malloc(sizeof(struct Node));
+	if (l == NULL)
+		Error("out of memory");
+	l->Next = NULL;
+	return l;
+}
+
+List MakeEmpty(List L) {
+	if (L == NULL)
+		Error("L is not created");
+	DeleteList(L);
+	L->Next = NULL;
+	return L;
+
+}
+
+int IsEmpty(List L) {
+	return L->Next == NULL;
+}
+
+int IsLast(Position_list P, List L) {
+	return P->Next == NULL;
+}
+
+Position_list Find(ElementType X, List L) {
+	Position_list P;
+	P = L->Next;
+	while (P != NULL && elementCmp(P->Element, X)) {
+		P = P->Next;
+	}
+	return P;
+}
+
+void Delete(ElementType X, List L) {
+	Position_list P;
+	P = FindPrevious(X, L);
+	if (!IsLast(P, L)) {
+		Position_list TmpCell = P->Next;
+		P->Next = TmpCell->Next;
+		free(TmpCell);
+	}
+}
+
+Position_list FindPrevious(ElementType X, List L) {
+	Position_list P;
+	P = L;
+	while (P->Next != NULL && elementCmp(P->Next->Element, X))
+		P = P->Next;
+	return P;
+}
+
+void Insert(ElementType X, Position_list P) {
+	Position_list tmpCell;
+	tmpCell = (List)malloc(sizeof(struct Node));
+	if (tmpCell == NULL)
+		FatalError("Out of space!!");
+	tmpCell->Element = X;
+	tmpCell->Next = P->Next;
+	P->Next = tmpCell;
+}
+
+void DeleteList(List L) {
+	Position_list p;
+	p = L->Next;
+	L->Next = NULL;
+	while (p != NULL) {
+		Position_list tmp;
+		tmp = p->Next;
+		free(p);
+		p = tmp;
+	}
+}
+
+Position_list Header(List L) {
+	return L;
+}
+
+Position_list First(List L) {
+	return L->Next;
+}
+
+Position_list Advance(Position_list P) {
+	return P->Next;
+}
+
+ElementType Retrieve(Position_list P) {
+	return P->Element;
+}
+
+void deleteNext(Position_list p) {
+	Position_list temp = p->Next->Next;
+	free(p->Next);
+	p->Next = temp;
+}
+
+//polynomial.h
+#ifndef _Polynomial_H
+#define _Polynomial_H
+
+
+typedef struct {
+	List list;
+}Polynomial;
+
+
+
+Polynomial creatPolynomial();
+void insertMonomials(ElementType e, Polynomial poly);
+void inputPolynomial(Polynomial poly);
+void ZeroPolynomial(Polynomial Poly);
+void AddPolynomial(const  Polynomial Poly1, const  Polynomial Poly2, Polynomial PolySum);
+void MulPolynomial(const  Polynomial Poly1, const  Polynomial Poly2, Polynomial PolyProd);
+void printAll(Polynomial poly);
+
+
+#endif // !_Polynomial_H
+
+//polynomial.cpp
+#include"Polynomial.h"
+#include<stdio.h>
+#include"hashQuad.h"
+
+struct  Node {
+	ElementType Element;
+	Position_list Next;
+};
+
+enum KindOfEntry { Legitimate, Empty, Deleted };
+
+struct HashEntry {
+	ElementType element;
+	enum KindOfEntry info;
+};
+
+typedef struct HashEntry Cell;
+
+struct HashTbl {
+	int tableSize;
+	int hasInsertedNum;
+	Cell* theCells;//数组
+};
+
+Polynomial creatPolynomial() {
+	Polynomial poly;
+	poly.list = CreateList();
+	return poly;
+}
+
+void insertMonomials(ElementType e, Polynomial poly) {
+	Position_list p = poly.list;
+	while (Advance(p) != NULL && Advance(p)->Element.Exponent > e.Exponent)
+		p = Advance(p);
+	if (Advance(p) == NULL) {
+		Insert(e, p);
+	}
+	else if (Advance(p)->Element.Exponent != e.Exponent)
+		Insert(e, p);
+	else {
+		Advance(p)->Element.Coefficient += e.Coefficient;
+		if (Advance(p)->Element.Coefficient == 0)
+			deleteNext(p);
+	}
+}
+
+void inputPolynomial(Polynomial poly) {
+	int coefficient, exponent;
+	ElementType monomials;
+	printf("please enter Coefficient and Exponent,alphabet to end\n");
+	while (scanf("%d", &coefficient) == 1) {
+		scanf("%d", &exponent);
+		monomials.Coefficient = coefficient;
+		monomials.Exponent = exponent;
+		insertMonomials(monomials, poly);
+	}
+	getchar();//字母还留在输入流当中，scanf是不会删去的
+}
+
+
+void ZeroPolynomial(Polynomial Poly) {
+	MakeEmpty(Poly.list);
+}
+
+void AddPolynomial(const  Polynomial Poly1, const  Polynomial Poly2, Polynomial PolySum) {
+	ZeroPolynomial(PolySum);
+	Position_list p1 = Poly1.list->Next;
+	Position_list p2 = Poly2.list->Next;
+	Position_list p3 = PolySum.list;
+	ElementType e;
+	while (p1 && p2) {
+		if (Retrieve(p1).Exponent > Retrieve(p2).Exponent) {
+			Insert(Retrieve(p1), p3);
+
+			p1 = Advance(p1);
+			p3 = Advance(p3);
+		}
+		else if (Retrieve(p1).Exponent < Retrieve(p2).Exponent) {
+			Insert(Retrieve(p2), p3);
+			p2 = Advance(p2);
+			p3 = Advance(p3);
+		}
+		else {
+			int temp_coefficient = (Retrieve(p1).Coefficient + Retrieve(p2).Coefficient);
+			if (temp_coefficient != 0) {
+				e.Coefficient = temp_coefficient;
+				e.Exponent = Retrieve(p1).Exponent;
+				Insert(e, p3);
+				p1 = Advance(p1);
+				p2 = Advance(p2);
+				p3 = Advance(p3);
+			}
+			else {
+				p1 = Advance(p1);
+				p2 = Advance(p2);
+			}
+		}
+	}
+	Position_list temp_p;
+	temp_p = (p1) ? p1 : p2;
+	if (temp_p == NULL)
+		return;
+	while (temp_p) {
+		Insert(Retrieve(temp_p), p3);
+		p3 = Advance(p3);
+		temp_p = Advance(temp_p);
+	}
+}
+
+
+void MulPolynomial(const  Polynomial Poly1, const  Polynomial Poly2, Polynomial PolyProd) {
+	ZeroPolynomial(PolyProd);
+	HashTable h = initializeTable(100);
+	ElementType prod;
+	for (Position_list i = Poly1.list->Next; i != NULL; i = Advance(i)) {
+		for (Position_list j = Poly2.list->Next; j != NULL; j = Advance(j)) {
+			prod.Coefficient = Retrieve(i).Coefficient * Retrieve(j).Coefficient;
+			prod.Exponent = Retrieve(i).Exponent + Retrieve(j).Exponent;
+			insert(prod, h);
+		}
+	}
+	for (int i = 0; i < h->tableSize; i++) {
+		if (h->theCells[i].info == Legitimate) {
+			Insert(h->theCells[i].element, PolyProd.list);
+		}
+	}
+}
+
+
+void printAll(Polynomial poly) {
+	Position_list p = Advance(poly.list);
+	printf("%dx^%d", Retrieve(p).Coefficient, Retrieve(p).Exponent);
+	p = Advance(p);
+	while (p) {
+		if (Retrieve(p).Coefficient > 0)
+			putchar('+');
+		printf("%dx^%d", Retrieve(p).Coefficient, Retrieve(p).Exponent);
+		p = Advance(p);
+	}
+	printf("\n");
+}
+
+//main.cpp
+#include"Polynomial.h"  
+#include<stdio.h>  
+#define N 1208  
+
+int main() {
+	Polynomial p1, p2, p3;
+	p1 = creatPolynomial();
+	p2 = creatPolynomial();
+	p3 = creatPolynomial();
+	inputPolynomial(p1);
+	printAll(p1);
+	inputPolynomial(p2);
+	printAll(p2);
+	MulPolynomial(p1, p2, p3);
+	printf("\n");
+	printAll(p3);
+}

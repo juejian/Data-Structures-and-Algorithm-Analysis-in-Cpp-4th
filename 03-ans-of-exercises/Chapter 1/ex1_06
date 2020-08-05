@@ -1,0 +1,29 @@
+#include<iostream>
+using namespace std;
+void permute(const string& str);
+void permute(const string& str, int low, int high);
+int main()
+{
+	string str = "abc";
+	permute(str);
+	system("pause");
+}
+void permute(const string& str) {
+	permute(str, 0, str.length() - 1);
+}
+void permute(const string& str, int low, int high) {
+	string str1 = str;
+	if (low == high) {
+		cout << str1 << " ";
+	}
+	else {
+		for (int i = low; i <= high; ++i)
+		//调用递归进行输出，把首元素提取出来，再将其后元素排列出所有可能
+		//在这里只对两个元素进行排列
+		{
+			swap(str1[low], str1[i]);
+			permute(str1, low + 1, high);
+			swap(str1[low], str1[i]);
+		}
+	}
+}

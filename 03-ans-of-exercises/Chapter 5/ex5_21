@@ -1,0 +1,62 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+const int maxn = 112337;
+int total;
+string h[maxn + 1];
+
+int Hash(string x)
+{
+	int l = x.length();
+	int m = l / 2;
+	int t = (x[0] - 65) * 10000 + (x[m] - 65) * 100 + x[l - 1] - 65;   //取值方法
+	return t % maxn;
+}
+
+void Insert(string x)
+{
+	int t = Hash(x);
+	while (h[t] != "" && h[t] != x)
+	{
+		t++;
+		if (t == maxn)
+			t = 0;
+	}
+	h[t] = x;
+}
+
+void Find(string x)
+{
+	int t = Hash(x);
+	while (h[t] != "" && h[t] != x)
+	{
+		t++;
+		if (t == maxn)
+			t = 0;
+	}
+	if (h[t] == "")
+		total++;
+}
+
+
+int main()
+{
+	int i, n, m;
+	string tmp;
+	cin >> n;          //输入到单词库中的单词数目
+	for (i = 1; i <= n; i++)
+	{
+		cin >> tmp;
+		Insert(tmp);
+	}
+	cin >> m;          //待查单词数目
+	for (i = 1; i <= m; i++)
+	{
+		cin >> tmp;
+		Find(tmp);
+	}
+	cout << total;
+
+	return 0;
+}

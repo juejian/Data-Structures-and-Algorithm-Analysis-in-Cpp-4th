@@ -1,0 +1,14 @@
+#include<iostream>
+using namespace std;
+int one(int n) {
+	if (n < 2)
+		return n;
+	return n % 2 + one(n / 2);
+}
+int main()
+{
+	int num;
+	cin >> num;
+	cout<<one(num)<<endl;
+	system("pause");
+}

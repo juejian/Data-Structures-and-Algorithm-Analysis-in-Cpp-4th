@@ -1,0 +1,322 @@
+#include<iostream>
+#include<math.h>
+#include<string.h>
+#include<stdlib.h>
+#include<stdio.h>
+#define MinTableSize 5
+
+
+typedef int ElementType;
+
+#ifndef _HashQuad_H
+#define _HashQuad_H
+
+typedef unsigned int Index;
+typedef Index Position;
+
+struct HashTbl;
+typedef struct HashTbl* HashTable;
+
+HashTable initializeTable(int tableSize);
+void destroyTable(HashTable h);
+Position find_LinearProbing(ElementType key, HashTable h);
+Position find_QuadraticProbing(ElementType key, HashTable h);
+Position find_DoubleHashing(ElementType key, HashTable h);
+HashTable insert(ElementType key, HashTable h, int type);
+HashTable rehash(HashTable h, int type);
+ElementType retrive(Position p, HashTable h);
+int isLegitimate(Position pos, HashTable h);
+#endif
+
+
+
+enum KindOfEntry { Legitimate, Empty, Deleted };
+
+int collitionCnt;
+
+struct HashEntry {
+	ElementType element;
+	enum KindOfEntry info;
+};
+
+typedef struct HashEntry Cell;
+
+struct HashTbl {
+	int tableSize;
+	int hasInsertedNum;
+	Cell* theCells;//数组
+};
+
+static Position hash(ElementType key, int tableSize) {
+	return key % (tableSize);
+}
+
+static Position hash2(ElementType key, int tableSize) {
+	return 7 - (key % 7);
+}
+
+static int isPrime(int num) {
+	for (int i = 2; i <= sqrt(num); i++)
+		if (num % i == 0)
+			return 0;
+	return 1;
+}
+static int nextPrime(int num) {
+	int i = num;
+	while (!isPrime(i))
+		i++;
+	return i;
+}
+
+int isLegitimate(Position pos, HashTable h) {
+	return h->theCells[pos].info == Legitimate;
+}
+
+
+HashTable initializeTable(int tableSize) {
+	HashTable h;
+	int i;
+	if (tableSize < MinTableSize) {
+		Error("Table size too small");
+		return NULL;
+	}
+	h = malloc(sizeof(struct HashTbl));
+	if (h == NULL)
+		FatalError("Out of space!!!");
+	h->tableSize = nextPrime(tableSize);
+	h->theCells = malloc(sizeof(Cell) * h->tableSize);
+	h->hasInsertedNum = 0;
+	if (h->theCells == NULL)
+		FatalError("Out of space!!!");
+	for (i = 0; i < h->tableSize; i++) {
+		h->theCells[i].info = Empty;
+	}
+	return h;
+}
+
+void destroyTable(HashTable h) {
+	free(h->theCells);
+	free(h);
+}
+
+Position find_LinearProbing(ElementType key, HashTable h) {
+	Position currentPos = hash(key, h->tableSize);
+	while (h->theCells[currentPos].info != Empty && h->theCells[currentPos].element != key) {
+		currentPos = (currentPos + 1) % h->tableSize;
+		collitionCnt++;
+	}
+	return currentPos;
+}
+
+Position find_QuadraticProbing(ElementType key, HashTable h) {
+	Position currentPos = hash(key, h->tableSize);
+	int collisionNum = 0;
+	while (h->theCells[currentPos].info != Empty && h->theCells[currentPos].element != key) {
+		++collisionNum;
+		currentPos = (currentPos + collisionNum * 2 - 1) % h->tableSize;
+		collitionCnt++;
+	}
+	return currentPos;
+}
+
+Position find_DoubleHashing(ElementType key, HashTable h) {
+	Position currentPos = hash(key, h->tableSize);
+	int i = 0;
+	while (h->theCells[currentPos].info != Empty && h->theCells[currentPos].element != key) {
+		currentPos += (++i * hash2(key, h->tableSize));
+		currentPos = currentPos % h->tableSize;
+		collitionCnt++;
+	}
+	return currentPos;
+}
+
+HashTable insert(ElementType key, HashTable h, int type) {
+	if ((double)h->hasInsertedNum / h->tableSize > 0.5)
+		h = rehash(h, type);
+	Position pos;
+	switch (type) {
+	case 1:
+		pos = find_LinearProbing(key, h);
+		break;
+	case 2:
+		pos = find_DoubleHashing(key, h);
+		break;
+	case 3:
+		pos = find_QuadraticProbing(key, h);
+		break;
+	default:
+		Error("insert type error");
+		break;
+	}
+	if (h->theCells[pos].info != Legitimate) {
+		h->theCells[pos].element = key;
+		h->theCells[pos].info = Legitimate;
+		h->hasInsertedNum++;
+	}
+	return h;
+}
+
+HashTable rehash(HashTable h, int type) {
+	HashTable newH = initializeTable(h->tableSize * 2);
+	for (int i = 0; i < h->tableSize; i++)
+		if (h->theCells[i].info == Legitimate)
+			insert(h->theCells[i].element, newH, type);
+	destroyTable(h);
+	return newH;
+}
+
+
+
+ElementType retrive(Position p, HashTable h) {
+	return h->theCells[p].element;
+}
+
+
+
+
+
+#define N 10000
+int ranintArr[N];//这么大的数组放在全局变量上，如果放在main里就是放在程序的堆上，运行时再分配。
+                //放在外面就是编译时就分配在静态数据那。
+
+extern int collitionCnt;
+
+int main() {
+	for (int i = 0; i < N; i++)
+		ranintArr[i] = rand();
+	HashTable h = initializeTable(200);
+	collitionCnt = 0;
+	for (int i = 0; i < N; i++) {
+		h = insert(ranintArr[i], h, 1);
+	}
+	printf("LinearProbing %d\n", collitionCnt);
+	destroyTable(h);
+
+	h = initializeTable(200);
+	collitionCnt = 0;
+	for (int i = 0; i < N; i++) {
+		h = insert(ranintArr[i], h, 2);
+	}
+	printf("QuadraticProbing %d\n", collitionCnt);
+	destroyTable(h);
+
+	h = initializeTable(200);
+	collitionCnt = 0;
+	for (int i = 0; i < N; i++) {
+		h = insert(ranintArr[i], h, 3);
+	}
+	printf("DoubleHashing %d\n", collitionCnt);
+	destroyTable(h);
+}
+
+//https://blog.csdn.net/qq789045/article/details/51388904
+
+
+
+
+
+
+
+//another way
+//Typical results for table size 1001
+//Linear Collisions : 5983
+//Quadratic Collisions : 2379
+//Double Hash Collisions : 258
+#include<iostream>
+#include<vector>
+#include<cmath>
+#include<ctime>
+using namespace std;
+
+int insertLinear(int x, vector<int>& linear);
+int insertQuad(int x, vector<int>& quad);
+int insertDuble(int x, int dubHash, vector<int>& duble);
+
+int main()
+{
+	int linCollides = 0;
+	int quadCollides = 0;
+	int dubCollides = 0;
+	int quadInc;
+	int tableSize;
+	bool fail = false;
+	int x, count = 0;
+	int doubleHash;
+
+	srand(time(NULL));
+	cout << "enter the size of the table ";
+	cin >> tableSize;
+	vector<int> linear(tableSize, -1);//initalize each table to -1 for empty
+	vector<int> quad(tableSize, -1);  //initalize each table to -1 for empty
+	vector<int> duble(tableSize, -1);  //initalize each table to -1 for empty
+	do {
+		doubleHash = rand() % tableSize;
+	} while (doubleHash < tableSize / 10 && doubleHash % tableSize == 0);
+	while (count < tableSize && !fail)
+	{
+		x = rand() % tableSize;// value to insert
+		quadInc = insertQuad(x, linear);
+		if (quadInc < 0)
+			fail = true;
+		else
+		{
+			quadCollides += quadInc;
+			linCollides += insertLinear(x, linear);
+			dubCollides += insertDuble(x, doubleHash, duble);
+		}
+		count++;
+	}
+	cout << "Num linear collides " << linCollides << endl;
+	cout << "Num quadratic collides " << quadCollides << endl;
+	cout << "Num double hash collides " << dubCollides << endl;
+	return 0;
+}
+int insertLinear(int x, vector<int>& linear)
+{
+	int collides = 0;
+	while (collides < linear.size() && linear[x] >= 0)
+	{
+		collides++;
+		x += 1;
+		x = x % linear.size();
+	}
+	linear[x] = x;
+	return collides;
+}
+int insertQuad(int x, vector<int>& quad)
+{
+	int collides = 0;
+	int probeDist = 1;
+	int probeDiff = 1;
+	bool fail = false;
+
+	while (collides < quad.size() && quad[x] >= 0 && !fail)
+	{
+		collides++;
+		x += probeDist;
+		x = x % quad.size();
+		probeDiff += 2;
+		probeDist += probeDiff;
+		if (probeDiff > quad.size())
+			fail = true;
+	}
+	if (fail || collides >= quad.size())
+		return -1;
+	else
+	{
+		quad[x] = x;
+		return collides;
+	}
+}
+int insertDuble(int x, int dubHash, vector<int>& duble)
+{
+	int collides = 0;
+	while (collides < duble.size() && duble[x] >= 0)
+	{
+		collides++;
+		x += dubHash;
+		x = x % duble.size();
+	}
+	duble[x] = x;
+	return collides;
+}

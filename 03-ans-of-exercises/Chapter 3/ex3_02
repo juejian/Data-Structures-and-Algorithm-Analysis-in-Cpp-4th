@@ -1,0 +1,27 @@
+//a.singly linked lists
+//beforP is the cell before the two adjacent cells that are to be swapped
+void swapWithNext1(Node* beforep)
+{
+	Node* p, * afterp;
+	p = before->next;
+	afterp = p->next;//both p and afterp assumed not NULL
+	p->next = afterp->next;
+	beforep->next = afterp;
+	afterp->next = p;
+}
+
+//b.doubly linked lists
+//P and afterP are cells to be swapped
+void swapWithNext2(Node* p)
+{
+	Node* bp, * ap;
+	bp = p->prev;
+	ap = p->next;
+	bp->next = ap;
+	ap->prev = bp;
+	p->next = ap->next;
+	ap->next->prev = p;
+	ap->next = p;
+	p->prev = ap;
+	
+}

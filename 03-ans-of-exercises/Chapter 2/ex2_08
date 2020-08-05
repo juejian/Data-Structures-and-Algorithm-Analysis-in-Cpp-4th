@@ -1,0 +1,51 @@
+//随机数生成
+int RantInt(int i, int j) {
+	if (i == 0)
+		return rand() % (j + 1);
+	else
+		return rand() % (j - i + 1);
+}//该函数要配合srand()使用：srand((unsigned) time(NULL));
+
+//algorithm 1
+void Rfun1(int a[], int n) {
+	int temp;
+	for (int i = 0; i < n; ++i) {
+		temp = RantInt(1, n);
+		for (int j = 0; j < i; ++j) {
+			if (temp == a[j]) {
+				temp = RantInt(1, n);
+				j = -1;//跳出循环
+			}
+		}
+		a[i] = temp;
+	}
+}
+
+//algorithm 2
+void Rfun2(int a[], int n) {
+	int temp;
+	int used[] = { 0 };
+	for (int i = 0; i < n; ++i) {
+		temp = RantInt(1, n);
+		while (used[temp] != 0)
+			temp = RantInt(1, n);
+		a[i] = temp;
+		used[i] = 1;
+	}
+}
+
+//algorithm 3
+void swap(int& a, int& b) {
+	int temp;
+	temp = a;
+	a = b;
+	b = temp;
+}
+void Rfun3(int a[], int n) {
+	for (int i = 0; i < n; ++i) {
+		a[i] = i + 1;
+	}
+	for (int i = 1; i < n; ++i) {
+		swap(a[i], a[RantInt(0, i)]);
+	}
+}

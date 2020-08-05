@@ -1,0 +1,50 @@
+//a
+Position Find(ElementType X, List L)
+{
+	int i, Where;
+
+	Where = 0;
+	for (i = 1; i < L.SizeOfList; i++)
+	{
+		if (X == L[i].Element)
+		{
+			Where = i;
+			break;
+		}
+	}
+
+	if (Where)
+	{
+		for (i = Where; i > 1; i--)
+			L[i].Element = L[i - 1].Element;
+		L[1].Element = X;
+		return 1;
+	}
+	else
+		return 0;
+}
+//b
+struct Node;
+typedef struct Node* List;
+struct Node {
+	int data;
+	struct Node* Next;
+};
+
+int
+Find(int X, List L)
+{
+	struct Node* p;
+	p = L->Next;
+	while (p != NULL && p->data != X)
+		p = p->Next;
+	if (p != NULL)
+	{
+		int t;
+		t = L->Next->data;
+		L->Next->data = X;
+		p->data = t;
+	}
+	else
+		return 0;
+}

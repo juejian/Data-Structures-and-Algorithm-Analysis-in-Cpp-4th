@@ -1,0 +1,43 @@
+int isBST2(struct node* node)
+{
+	return(isBSTUtil(node, INT_MIN, INT_MAX));
+}
+/*
+给定的二叉树是BST则返回true，且它的值  >min 以及 < max.
+*/
+int isBSTUtil(struct node* node, int min, int max)
+{
+	if (node == NULL) return(true);
+	// 如果不满足min和max约束，返回false
+	if (node->data <= min || node->data >= max) return(false);
+	// 递归判断左右子树是否满足min和max约束条件
+	return
+		isBSTUtil(node->left, min, node->data) &&
+		isBSTUtil(node->right, node->data, max)
+		);
+}
+
+bool isBSTInOrder(BinaryTree* root)
+{
+	int prev = INT_MIN;
+	return isBSTInOrderHelper(root, prev);
+}
+/*该函数判断二叉树p是否是一棵二叉搜索树，且其结点值都大于prev*/
+bool isBSTInOrderHelper(BinaryTree* p, int& prev)
+{
+	if (!p) return true;
+	if (isBSTInOrderHelper(p->left, prev)) { // 如果左子树是二叉搜索树，且结点值都大于prev
+		if (p->data > prev) { //判断当前结点值是否大于prev，因为此时prev已经设置为已经中序遍历过的结点的最大值。
+			prev = p->data;
+			return isBSTInOrderHelper(p->right, prev); //若结点值大于prev，则设置prev为当前结点值，并判断右子树是否二叉搜索树且结点值都大于prev。
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		return false;
+	}
+}
+//https://blog.csdn.net/sgbfblog/article/details/7771096
+//https://blog.csdn.net/shltsh/article/details/46510569

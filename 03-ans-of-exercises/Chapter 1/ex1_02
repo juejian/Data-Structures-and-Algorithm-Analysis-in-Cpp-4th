@@ -1,0 +1,107 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include<cstring>
+
+char puzzle[4][4] = {
+	{'t','h','i','s'},
+	{'w','a','t','s'},
+	{'o','a','h','g'},
+	{'f','g','g','t'}
+};
+
+char dict1[] = "this";
+char dict2[] = "two";
+char dict3[] = "fat";
+char dict4[] = "that";
+
+int wordExist(int x, int y, int dir, int len, char* word);
+
+int main(void)
+{
+	char word[5];
+	int x, y, dir, len;
+
+	for (x = 0; x < 4; x++) {
+		for (y = 0; y < 4; y++) {
+			for (dir = 0; dir < 8; dir++) {
+				for (len = 2; len < 5; len++) {
+					// 坐标 x y
+					// 方向 dir
+					// 单词长度从2开始
+					if (wordExist(x, y, dir, len, word) == 1) {
+						printf("word: %s\n", word);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+int wordExist(int x, int y, int dir, int len, char* word)
+{
+	char sword[5];
+	int i = 0, j;
+	while (i < len) {
+		sword[i++] = puzzle[x][y];
+		sword[i] = '\0';
+		for (j = 0; j < 4; j++) {
+			if (strcmp(sword, dict1) == 0) {
+				strcpy_s(word,strlen(dict1) + 1,dict1);
+				return 1;
+			}
+			if (strcmp(sword, dict2) == 0) {
+				strcpy_s(word, strlen(dict2) + 1, dict2);
+				return 1;
+			}
+			if (strcmp(sword, dict3) == 0) {
+				strcpy_s(word, strlen(dict3) + 1, dict3);
+				return 1;
+			}
+			if (strcmp(sword, dict4) == 0) {
+				strcpy_s(word, strlen(dict4) + 1, dict4);
+				return 1;
+			}
+		}
+
+		switch (dir) {
+		case 0:        //从左到右
+			y++;
+			break;
+		case 1:        //从右到左
+			y--;
+			break;
+		case 2:        //从上到下
+			x++;
+			break;
+		case 3:        //从下到上
+			x--;
+			break;
+		case 4:        //从左上到右下
+			x++;
+			y++;
+			break;
+		case 5:        //从右下到左上
+			x--;
+			y--;
+			break;
+		case 6:        //从左下到右上
+			x--;
+			y++;
+			break;
+		case 7:        //从右上到左下
+			x++;
+			y--;
+			break;
+		default:
+			puts("Direction error.");
+			return 0;
+		}
+		if (x < 0 || y < 0)
+			return 0;
+	}
+	return 0;
+}

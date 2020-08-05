@@ -1,0 +1,187 @@
+//hashquad.h
+typedef int XType;
+typedef int YType;
+
+#ifndef _HashQuad_H
+#define _HashQuad_H
+
+typedef unsigned int Index;
+typedef Index Position;
+
+struct HashTbl;
+typedef struct HashTbl* HashTable;
+
+HashTable initializeTable(int tableSize);
+void destroyTable(HashTable h);
+Position find(XType x, HashTable h);
+HashTable insert(XType x, YType y, HashTable h);
+HashTable rehash(HashTable h);
+YType map(XType x, HashTable h);
+int isLegitimate(Position pos, HashTable h);
+#endif
+
+//hashquad.cpp
+#include"hashQuad.h"
+#include"fatal.h"
+#include<math.h>
+#include<string.h>
+#define MinTableSize 5
+
+enum KindOfEntry { Legitimate, Empty, Deleted };
+
+struct ElementType {
+	XType x;
+	YType y;
+};
+
+struct HashEntry {
+	ElementType element;
+	enum KindOfEntry info;
+};
+
+typedef struct HashEntry Cell;
+
+struct HashTbl {
+	int tableSize;
+	int hasInsertedNum;
+	Cell* theCells;//数组
+};
+
+static int hash(XType x, int tableSize) {
+	return x % (tableSize);
+}
+
+static Position hash2(XType x, int tableSize) {
+	return 7 - (x % 7);
+}
+
+
+static int isPrime(int num) {
+	for (int i = 2; i <= sqrt(num); i++)
+		if (num % i == 0)
+			return 0;
+	return 1;
+}
+static int nextPrime(int num) {
+	int i = num;
+	while (!isPrime(i))
+		i++;
+	return i;
+}
+
+int isLegitimate(Position pos, HashTable h) {
+	return h->theCells[pos].info == Legitimate;
+}
+
+
+HashTable initializeTable(int tableSize) {
+	HashTable h;
+	int i;
+	if (tableSize < MinTableSize) {
+		Error("Table size too small");
+		return NULL;
+	}
+	h = (HashTable)malloc(sizeof(struct HashTbl));
+	if (h == NULL)
+		FatalError("Out of space!!!");
+	h->tableSize = nextPrime(tableSize);
+	h->theCells = (Cell*)malloc(sizeof(Cell) * h->tableSize);
+	h->hasInsertedNum = 0;
+	if (h->theCells == NULL)
+		FatalError("Out of space!!!");
+	for (i = 0; i < h->tableSize; i++) {
+		h->theCells[i].info = Empty;
+	}
+	return h;
+}
+
+void destroyTable(HashTable h) {
+	free(h->theCells);
+	free(h);
+}
+
+
+
+static Position find(XType x, HashTable h) {
+	Position currentPos = hash(x, h->tableSize);
+	int i = 0;
+	while (h->theCells[currentPos].info != Empty && h->theCells[currentPos].element.x != x) {
+		currentPos += (++i * hash2(x, h->tableSize));
+		currentPos = currentPos % h->tableSize;
+	}
+	return currentPos;
+}
+
+HashTable insert(XType x, YType y, HashTable h) {
+	if ((double)h->hasInsertedNum / h->tableSize > 0.5)
+		h = rehash(h);
+	Position pos = find(x, h);
+	if (h->theCells[pos].info != Legitimate) {
+		h->theCells[pos].element.x = x;
+		h->theCells[pos].element.y = y;
+		h->theCells[pos].info = Legitimate;
+		h->hasInsertedNum++;
+	}
+	return h;
+}
+
+HashTable rehash(HashTable h) {
+	HashTable newH = initializeTable(h->tableSize * 2);
+	for (int i = 0; i < h->tableSize; i++)
+		if (h->theCells[i].info == Legitimate)
+			insert(h->theCells[i].element.x, h->theCells[i].element.y, newH);
+	destroyTable(h);
+	return newH;
+}
+
+
+
+YType map(XType x, HashTable h) {
+	Position p = find(x, h);
+	return h->theCells[p].element.y;
+}
+
+//main.cpp
+#include<iostream>
+#include<sstream>
+#include<string>
+#include<vector>
+#include"hashQuad.h"
+
+
+int main() {
+	HashTable h = initializeTable(200);
+	int newNumCnt = 0xf;//从f处开始
+	std::vector<std::string> proc;
+	std::string line;
+	while (std::getline(std::cin, line)) {
+		std::stringstream ss(line);
+		std::string word;
+		std::string changed_line;
+		ss >> word;//读入原序列
+		int ori_num = std::stoi(word);
+		int new_num = newNumCnt;
+		char buff[20];
+		changed_line += itoa(newNumCnt, buff, 16);
+		changed_line += ' ';
+		newNumCnt += 0xd;
+		h = insert(ori_num, new_num, h);
+		while (ss >> word) {
+			if (word == "GOTO" || word == "GOSUB") {
+				changed_line += word;
+				changed_line += ' ';
+				ss >> word;
+				changed_line += itoa(map(atoi(word.c_str()), h), buff, 16);
+			}
+			else {
+				changed_line += word;
+				changed_line += ' ';
+			}
+		}
+		proc.push_back(changed_line);
+	}
+	for (const auto& str : proc) {
+		std::cout << str << std::endl;
+	}
+}
+//https://blog.csdn.net/qq789045/article/details/51412921

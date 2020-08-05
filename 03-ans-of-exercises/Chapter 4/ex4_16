@@ -1,0 +1,395 @@
+//懒惰删除a
+template
+class BSTree {
+public:
+	BSTree() :root{ nullptr } {}
+	BSTree(const BSTree& rhs) {
+		root = clone(rhs.root);
+	}
+	~BSTree() { makeEmpty(); }
+
+	const Object& findMin() //返回最小值
+	{
+		if (!findMin(root))
+			std::cerr << "The tree is Empty!" << std::endl;
+		return min->element;
+	}
+	const Object& findMax()//返回最大值
+	{
+		if (!findMax(root))
+			std::cerr << "The tree is Empty!" << std::endl;
+		return max->element;
+	}
+	bool isEmpty() const { return root == nullptr; }
+
+	//如下函数调用私有成员函数，以多一个指针参数方便后面的递归
+	void makeEmpty() { makeEmpty(root); }
+	bool contains(const Object& x) const { return contains(x, root); }
+	void insert(const Object& x) { insert(x, root); }
+	void remove(const Object& x) { remove(x, root); }
+
+	//半可视化打印树
+	void printTree(ostream& out = cout) const { printTree(root, out); }
+
+	BSTree& operator = (const BSTree& rhs) {
+		if (this != &rhs) {
+			makeEmpty();
+			root = clone(rhs.root);
+		}
+		return *this;
+	}
+
+private:
+	struct BNode {
+		Object element;
+		int count; //记录该值的次数
+		BNode* left;
+		BNode* right;
+		BNode(const Object& theElement = Obejct{}, BNode* lt = nullptr, BNode* rt = nullptr)
+			:element{ theElement }, left{ lt }, right{ rt } {
+			count = 1;//一旦新插入一个节点，那么该值次数即为1
+		}
+	};
+	int theSize = 0; //当前节点
+	int delSize = 0; //删除节点
+	BNode* root;
+	BNode* min = nullptr;//用来标记所找的那个节点
+	BNode* max = nullptr;
+
+	bool findMin(BNode* t) {
+		if (t) {
+			//不能写成if(t->left) return findMin(t->left);
+			if (findMin(t->left)) return true;
+			if (t->count > 0) {
+				min = t;
+				return true;
+			}
+			return findMin(t->right);
+		}
+		return false;
+	}
+	bool findMax(BNode* t) {
+		if (t) {
+			if (findMax(t->right))  return true;
+			if (t->count > 0) {
+				max = t;
+				return true;
+			}
+			return findMax(t->left);
+		}
+		return false;
+	}
+	void deleteNodes(BNode*& t) {
+		if (t == nullptr) return;//空子树,do nothing
+		if (t->count == 0) {
+			//t需要被删除
+			if ((t->left != nullptr) && (t->right != nullptr)) {
+				if (findMin(t->right)) {
+					//t的两个子树均非空,且在它的右子树中找到了可用的最小结点
+					t->element = min->element;
+					t->count = min->count;
+					min->count = 0;//右子树中的最小结点即将被删除
+					deleteNodes(t->left);
+					deleteNodes(t->right);
+				}
+				else if (findMax(t->left)) {
+					t->element = max->element;
+					t->count = max->count;
+					max->count = 0;
+					deleteNodes(t->left);
+					deleteNodes(t->right);
+				}
+				else //t的右子树中的所有结点的count均为0,则将其置空.
+					makeEmpty(t);
+			}
+			else {
+				BNode* oldnode = t;
+				t = t->left ? t->left : t->right;
+				delete oldnode;
+				oldnode = nullptr;
+				if (t != nullptr) deleteNodes(t);//若新的t非空,继续对它执行删除操作
+			}
+		}
+		else {//t不需要被删除,继续在它的子树中查找
+			deleteNodes(t->left);
+			deleteNodes(t->right);
+		}
+	}
+
+	//成熟的递归函数,克隆子树的内部方法；
+	BNode* clone(BNode * t) const {
+		if (t == nullptr) return nullptr;
+		else
+			return new BNode{ t->element, clone(t->left), clone(t->right) };
+	}
+
+	void outputTree(BNode * t, bool left, const string s, ostream & out = cout) const {
+		if (t->right)
+			outputTree(t->right, false, s + (left ? "|     " : "      "), out);
+		out << s;
+		out << (left ? '\\' : '/');
+		out << "-----";
+		if (t->count >= 1)
+			out << t->element << "(" << t->count << ")" << endl;
+		else if (t->count == 0)
+			out << t->element << "(0)" < left)
+			outputTree(t->left, true, s + (left ? "      " : "|     "), out);
+	}
+
+	void printTree(BNode * t, ostream & out = cout) const {
+		if (t == nullptr) return;
+		//如果不加const 会出现2 个重载没有this指针的合法转换
+		if (t->right)
+			outputTree(t->right, false, "", out);
+		out << t->element << "(" << t->count << ")" << endl;
+		if (t->left)
+			outputTree(t->left, true, "", out);
+	}
+
+	bool contains(const Object & x, BNode * t) const {
+		if (t == nullptr)return false;
+		if (xelement)
+			return contains(x, t->left);
+		else if (x > t->element)
+			return contains(x, t->right);
+		else if (t->count > 0)
+			return true;
+		return false;
+	}
+
+	void makeEmpty(BNode * &t) {
+		if (t) {
+			makeEmpty(t->left);
+			makeEmpty(t->right);
+			delete t;
+			t = nullptr;
+		}
+	}
+
+	void insert(const Object & x, BNode * &t) {
+		if (t == nullptr) {
+			++theSize;
+			t = new BNode{ x, nullptr, nullptr };
+		}
+		else if (xelement)
+			insert(x, t->left);
+		else if (x > t->element)
+			insert(x, t->right);
+		else ++t->count;
+	}
+
+	void remove(const Object & x, BNode * &t) {
+		if (t == nullptr)return;
+		if (xelement)
+			remove(x, t->left);
+		else if (x > t->element)
+			remove(x, t->right);
+		else if (t->count > 0 && --(t->count) == 0 && ++delSize >= --theSize) {
+			//若count大于0,则减1;若减1后为0,则delSize加1;
+			//若delSize>=theSize,则执行delete操作
+			deleteNodes(root); //真正的删除操作
+			delSize = 0;       //delSize归零
+		}
+	}
+
+};
+
+int main()
+{
+	srand((unsigned)time(nullptr));
+	BSTree t;
+	for (int i = 0; i < 20; ++i)  //随机生成20个数[0,7]
+		t.insert(rand() % 8);
+	t.printTree(cout);
+	cout << endl;
+	int num;
+	for (int i = 0; i < 18; ++i) {//随机删除18个数[0,7]
+		num = rand() % 8;
+		cout << num << endl;
+		t.remove(num);
+		t.printTree(cout);
+		cout << endl;
+	}
+	getchar();
+	return 0;
+}
+//https://blog.csdn.net/Immorwave/article/details/77944761
+//懒惰删除b
+#include<iostream>
+#include<cstdlib>
+using namespace std;
+
+template<typename T>
+class BinaryTree {
+public:
+	T element;
+	BinaryTree* left;
+	BinaryTree* right;
+	bool deleted;       //懒惰删除标识符
+	BinaryTree(T e, BinaryTree* l = NULL, BinaryTree* r = NULL) :element(e), left(l), right(r) { deleted = false; }
+	void printNode() {
+		cout << this->element << " ";
+	}
+};
+
+template<typename T>
+class binarySearchTree {
+private:
+	BinaryTree<T>* root;
+public:
+	binarySearchTree() {
+		root = NULL;
+	}
+	void insert(const T& x) {
+		insert(x, root);
+	}
+	void printTree() {
+		cout << "中序" << endl;
+		printTree(root);
+		cout << endl << "后序" << endl;
+		printTree(root, 1);
+	}
+	//懒惰删除
+	void lazyDelete(const T& x) {
+		lazyDelete(x, root);
+	}
+
+	T findMax() {
+		return findMax(root)->element;
+	}
+	T findMin() {
+		return findMin(root)->element;
+	}
+	//删除所有叶子节点
+	void removeLeaves() {
+		removeLeaves(root);
+	}
+	//输出一定范围内的节点
+	void printRange(const T& x, const T& y)const {
+		printRange(root, x, y);
+	}
+
+private:
+	//懒惰删除情况下的插入节点
+	void insert(const T& x, BinaryTree<T>*& t) {
+		if (t == NULL) {
+			t = new BinaryTree<T>(x);
+		}
+		//如果是懒惰删除的节点，则直接替换值
+		else if (t->deleted == true) {
+			t->element = x;
+			t->deleted = false;
+		}
+		else if (x < t->element) {
+			insert(x, t->left);
+		}
+		else if (t->element < x) {
+			insert(x, t->right);
+		}
+		else {
+			;
+		}
+	}
+	//懒惰删除情况下的最大值
+	BinaryTree<T>* findMax(BinaryTree<T>* t)const {
+		if (t == NULL) {
+			return NULL;
+		}
+		//如果是懒惰删除的点则跳过
+		if (t->right == NULL || t->right->deleted == true) {
+			return t;
+		}
+		return findMax(t->right);
+	}
+	//懒惰删除情况下的最小值
+	BinaryTree<T>* findMin(BinaryTree<T>* t)const {
+		if (t == NULL) {
+			return NULL;
+		}
+		//如果是懒惰删除的点则跳过
+		else if (t->left == NULL || t->left->deleted == true) {
+			return t;
+		}
+		else {
+			return findMin(t->left);
+		}
+	}
+
+	//懒惰删除情况下的中序遍历打印树
+	void printTree(BinaryTree<T>* t)const {
+		if (t != NULL) {
+			printTree(t->left);
+			if (t->deleted == true) {
+				cout << ' ';
+			}
+			else {
+				cout << t->element << ' ';
+			}
+			printTree(t->right);
+		}
+	}
+	//懒惰删除情况下的后序遍历打印树
+	void printTree(BinaryTree<T>* t, int x)const {
+		if (t != NULL) {
+			printTree(t->left, 1);
+			printTree(t->right, 1);
+			if (t->deleted == true) {
+				cout << ' ';
+			}
+			else {
+				cout << t->element << ' ';
+			}
+		}
+	}
+	//懒惰删除节点
+	void lazyDelete(const T& x, BinaryTree<T>*& t) {
+		if (t == NULL) {
+			return;
+		}
+		else if (x < t->element) {
+			lazyDelete(x, t->left);
+		}
+		else if (x > t->element) {
+			lazyDelete(x, t->right);
+		}
+		else {
+			//只做标识符的变换，不直接删除
+			if (t->deleted == true) {
+				return;
+			}
+			else {
+				t->deleted = true;
+				return;
+			}
+		}
+	}
+	//删除树叶节点
+	void removeLeaves(BinaryTree<T>*& t) {
+		if (t == NULL || (t->left == NULL && t->right == NULL)) {
+			delete t;
+			t = NULL;
+		}
+		else {
+			removeLeaves(t->left);
+			removeLeaves(t->right);
+		}
+	}
+	//输出一定范围内的节点
+	void printRange(BinaryTree<T>* t, const T& x, const T& y)const {
+		if (t == NULL) {
+			return;
+		}
+		if (t->element >= x) {
+			printRange(t->left, x, y);
+		}
+		if (x <= t->element && t->element <= y) {
+			t->printNode();
+		}
+		if (t->element <= y) {
+			printRange(t->right, x, y);
+		}
+	}
+
+};
+//https://blog.csdn.net/DragonBark/article/details/79099157
+

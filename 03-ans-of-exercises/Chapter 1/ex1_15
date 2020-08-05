@@ -1,0 +1,67 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+template <typename Comparable>
+const Comparable& findMax(const vector<Comparable>& a)
+{
+	int maxIndex = 0;
+	for (int i = 1; i < a.size(); ++i)
+		if (a[maxIndex] < a[i])
+			maxIndex = i;
+	return a[maxIndex];
+}
+
+class Rectangle
+{
+public:
+	explicit Rectangle(double l = 0.0, double w = 0.0) : length{ l }, width{ w }
+	{ }
+	double getLength() const
+	{
+		return length;
+	}
+	double getWidth() const
+	{
+		return width;
+	}
+	double getArea() const
+	{
+		return length * length;
+	}
+	double getPerimeter() const
+	{
+		return 2 * (length + width);
+	}
+	void print() const
+	{
+		cout <<"长" << getLength() << "," << "宽" << getWidth() <<endl;
+	}
+	bool operator< (const Rectangle & rhs) const
+	{
+		if (getArea() < rhs.getArea())
+			return  getArea() < rhs.getArea();
+		else
+			if (getPerimeter() < getPerimeter())
+				return getPerimeter() < getPerimeter();
+
+
+	}
+private:
+	double length, width;
+};
+
+ostream& operator<< (ostream& out, const Rectangle& rhs)
+{
+	rhs.print();
+	return out;
+}
+
+int main()
+{
+	vector<Rectangle>v(3);
+	v[0] = Rectangle{ 3.0,2.0 };
+	v[1] = Rectangle{ 2.5,2.5 };
+	v[2] = Rectangle{ 2.3,2.7 };
+	cout << "Largest Rectangle: " << findMax(v) << endl;
+	system("pause");
+}

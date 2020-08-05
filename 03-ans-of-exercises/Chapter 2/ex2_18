@@ -1,0 +1,16 @@
+template<typename Comparable>
+float root(fun())
+{
+	float a = low, b = high;
+	while (a <= b)
+	{
+		float mid = (a + b) / 2;
+		if (fun(mid) == 0)
+			return mid;
+		else if (fun(mid) * fun(a) < 0)
+			b = mid;
+		else if (fun(mid) * fun(b) < 0)
+			a = mid;
+	}
+	return NOT_FOUND;
+}

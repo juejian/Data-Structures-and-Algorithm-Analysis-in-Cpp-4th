@@ -1,0 +1,75 @@
+//a and b
+void inToPostfix()
+{
+	stack<char>s;
+	char token;
+	cin >> token;
+	while (token != '=')
+	{
+		if (token >= 'a' && token <= 'z')
+			cout << token << " ";
+		else
+			switch (token)
+			{
+			case')':while (!s.empty() && s.top() != '(')
+			{
+				cout << s.top() << " "; s.pop();
+			}
+			s.pop(); break;
+			case'(':s.push(token); break;
+			case'^':while (!s.empty()&&!(s.top()=='^'||s.top()=='('))
+			{
+				cout << s.top(); s.pop();
+			}
+			s.push(token); break;
+			case'*':
+			case'/':while(!s.empty()&&s.top()!='+'&&s.top()!='-'&&s.top()!='(')
+			{
+				cout << s.top(); s.pop();
+			}
+					s.push(token); break;
+			case'+':
+			case'-':while(!s.empty()&&s.top()!='(')
+			{
+				cout << s.top() << " "; s.pop();
+			}s.push(token); break;
+			}
+		cin >> token;
+		
+		
+
+	}
+	while (!s.empty()) {
+		cout << s.top() << " "; s.pop();
+	}
+	cout << "=\n";
+}
+//c
+string postToInfix()
+{
+	stack<string>s;
+	string token;
+	string a, b;
+	cin >> token;
+	while (token[0] != '=')
+	{
+		if (token[0] >= 'a' && token[0] <= 'z')
+			s.push(token);
+		else
+			switch (token[0])
+			{
+			case'+':a = s.top(); s.pop(); b = s.top(); s.pop();
+				s.push("(" + a + "+" + b + ")"); break;
+			case'-':a = s.top(); s.pop(); b = s.top(); s.pop();
+				s.push("(" + a + "-" + b + ")"); break;
+			case'*':a = s.top(); s.pop(); b = s.top(); s.pop();
+				s.push("(" + a + "*" + b + ")"); break;
+			case'/':a = s.top(); s.pop(); b = s.top(); s.pop();
+				s.push("(" + a + "/" + b + ")"); break;
+			case'^':a = s.top(); s.pop(); b = s.top(); s.pop();
+				s.push("(" + a + "^" + b + ")"); break;
+			}
+		cin >> token;
+	}
+	return s.top();
+}

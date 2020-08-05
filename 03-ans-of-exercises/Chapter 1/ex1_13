@@ -1,0 +1,79 @@
+#pragma once
+#include<iostream>
+#include<string>
+#include<vector>
+using namespace std;
+template<typename Object>
+class collection
+{
+public:
+	collection() = default;
+	collection(Object oj) :obj(oj) {}
+	Object getObj() { return obj; }
+	//size、clear函数随着类型的确定编译器会自动选择
+	bool isEmpty() { return obj.size() ? false : true; }
+	Object makeEmpty() { obj.clear(); }
+	collection<Object>& operator=(collection<Object>& a) { *this = a; }
+	~collection() {};
+	template<typename T>
+	Object insert(T apl) {
+		Object temp;
+		temp.resize(obj.size() + 1);
+		for (size_t i = 0; i < obj.size(); ++i) {
+			temp[i] = obj[i];
+		}
+		temp[temp.size() - 1] = apl;
+		obj = temp;
+		return obj;
+	}
+	template<typename T>
+	bool contains(T in) {
+		if (obj.size() == 0) { return false; }
+		for (auto ob : obj) {
+			if (in == ob)
+				return true;
+		}
+		return false;
+	}
+	template<typename T>
+	void remove(T oup) {
+		if (obj.size() == 0) { return; }
+		for (size_t i = 0; i < obj.size(); ++i) {
+			if (oup == obj[i]) {
+				obj[i] = NULL;
+			}
+		}
+		Object temp;
+		temp.resize(obj.size() - 1);
+		int i = 0;
+		for (auto ob : obj) {
+			if (ob != NULL) {
+				temp[i] = ob;
+				++i;
+			}
+		}
+		obj = temp;
+	}
+	void print() {
+		for (auto each : obj)
+			cout << each << " " << endl;
+	}
+private:
+	Object obj;
+};
+int main()
+{
+	vector<int> a = { 1,2,3,4,5 };
+	vector<int> b;
+	collection<vector<int>>  c(a);
+	collection<string> stc;
+
+	cout << c.getObj().at(1) << endl;
+	c.insert<int>(6);
+	cout << "C after inserted :  " << c.getObj()[5] << endl;
+	c.remove(3);
+	cout << "c.constains(3) true or false: " << c.contains(3) << endl;
+	c.print();
+	cout << "c.isEmpty() true or false: " << c.isEmpty() << endl;
+	system("pause");
+}

@@ -1,0 +1,41 @@
+string lcs(string w1, string w2) 
+{
+	int i, j, n, m; 
+	string common = ""; 
+	n = w1.size(); 
+	m = w2.size(); 
+	vector < vector < int> > M(n + 1); 
+	for (i = 0; i < n + 1; i++) 
+		M[i].resize(m + 1); 
+	for (i = 0; i <= n; i++) 
+		M[i][0] = 0; 
+	for (j = 0; j <= m; j++) 
+		M[0][j] = 0;
+	for (j = 1; j <= m; j++) 
+		for (i = 1; i <= n; i++) 
+		{ 
+			if (w1[i - 1] == w2[j - 1]) 
+				M[i][j] = 1 + M[i - 1][j - 1]; 
+			else 
+				M[i][j] = max(M[i][j - 1], M[i - 1][j]); 
+		}
+	// Now the trace back code 
+	i = n; 
+	j = m; 
+	while(i>0 && j > 0) 
+	{ 
+		if (M[i][j] == 1+ M[i-1][j-1] 
+			&& w1[i-1] == w2[j-1])// there was a match
+			 
+		{ 
+			common = w1[i-1]+common; 
+			i--; 
+			j--; 
+		} 
+		else if (M[i-1][j] > M[i][j-1]) 
+			i--; 
+		else 
+			j--; 
+	} 
+	return common;
+}

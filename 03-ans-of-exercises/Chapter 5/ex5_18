@@ -1,0 +1,658 @@
+//A
+//hashQuad.h
+typedef char* ElementType;
+
+#ifndef _HashQuad_H
+#define _HashQuad_H
+
+typedef unsigned int Index;
+typedef Index Position;
+
+struct HashTbl;
+typedef struct HashTbl* HashTable;
+
+HashTable initializeTable(int tableSize);
+void destroyTable(HashTable h);
+Position find(const char* key, HashTable h);
+HashTable insert(ElementType key, HashTable h);
+HashTable rehash(HashTable h);
+ElementType retrive(Position p, HashTable h);
+int isLegitimate(Position pos, HashTable h);
+#endif
+
+//hashQuad.cpp
+#include"hashQuad.h"
+#include"fatal.h"
+#include<math.h>
+#include<string.h>
+#define MinTableSize 10
+
+enum KindOfEntry { Legitimate, Empty, Deleted };
+
+struct HashEntry {
+	ElementType element;
+	enum KindOfEntry info;
+};
+
+typedef struct HashEntry Cell;
+
+struct HashTbl {
+	int tableSize;
+	int hasInsertedNum;
+	Cell* theCells;//数组
+};
+
+static int hash(const char* key, int tableSize) {
+	unsigned int hashVal = 0;
+	while (*key != '\0')
+		hashVal = (hashVal << 5) + *key++;
+	return hashVal % (tableSize);
+}
+static int isPrime(int num) {
+	for (int i = 2; i <= sqrt(num); i++)
+		if (num % i == 0)
+			return 0;
+	return 1;
+}
+static int nextPrime(int num) {
+	int i = num;
+	while (!isPrime(i))
+		i++;
+	return i;
+}
+
+int isLegitimate(Position pos, HashTable h) {
+	return h->theCells[pos].info == Legitimate;
+}
+
+
+HashTable initializeTable(int tableSize) {
+	HashTable h;
+	int i;
+	if (tableSize < MinTableSize) {
+		Error("Table size too small");
+		return NULL;
+	}
+	h = (HashTable)malloc(sizeof(struct HashTbl));
+	if (h == NULL)
+		FatalError("Out of space!!!");
+	h->tableSize = nextPrime(tableSize);
+	h->theCells = (Cell*)malloc(sizeof(Cell) * h->tableSize);
+	h->hasInsertedNum = 0;
+	if (h->theCells == NULL)
+		FatalError("Out of space!!!");
+	for (i = 0; i < h->tableSize; i++) {
+		h->theCells[i].info = Empty;
+	}
+	return h;
+}
+
+void destroyTable(HashTable h) {
+	for (int i = 0; i < h->tableSize; i++)
+		if (h->theCells[i].info == Legitimate)
+			free(h->theCells[i].element);
+	free(h->theCells);
+	free(h);
+}
+
+Position find(const char* key, HashTable h) {
+	Position currentPos = hash(key, h->tableSize);
+	while (h->theCells[currentPos].info != Empty && strcmp(h->theCells[currentPos].element, key) != 0) {
+		currentPos = (currentPos + 1) % h->tableSize;
+	}
+	return currentPos;
+}
+
+HashTable insert(ElementType key, HashTable h) {
+	if ((double)h->hasInsertedNum / h->tableSize > 0.5)
+		h = rehash(h);
+	Position pos = find(key, h);
+	if (h->theCells[pos].info != Legitimate) {
+		h->theCells[pos].element = (char*)malloc(sizeof(char) * strlen(key) + 1);
+		strcpy(h->theCells[pos].element, key);
+		h->theCells[pos].info = Legitimate;
+		h->hasInsertedNum++;
+	}
+	return h;
+}
+
+HashTable rehash(HashTable h) {
+	HashTable newH = initializeTable(h->tableSize * 2);
+	for (int i = 0; i < h->tableSize; i++)
+		if (h->theCells[i].info == Legitimate)
+			insert(h->theCells[i].element, newH);
+	destroyTable(h);
+	return newH;
+}
+
+
+
+ElementType retrive(Position p, HashTable h) {
+	return h->theCells[p].element;
+}
+
+//main.cpp
+#include<stdio.h>
+#include<string>
+#include<algorithm>
+#include"hashQuad.h"
+
+#define MAXN 100
+
+char dictionary[MAXN][MAXN];
+char table[MAXN][MAXN];//字谜
+
+					   //由上顺时针旋转一圈
+int dx[8] = { 0,1,1,1,0,-1,-1,-1 };
+int dy[8] = { 1,1,0,-1,-1,-1,0,1 };
+
+int dic_num, n;
+
+int main() {
+	int i;
+	HashTable h = initializeTable(100);
+	scanf("%d%d", &dic_num, &n);
+
+	for (i = 0; i < dic_num; i++) {
+		scanf("%s", dictionary[i]);
+		h = insert(dictionary[i], h);
+	}
+
+	for (i = 0; i < n; i++) {
+		scanf("%s", table[i]);
+	}
+
+	for (int r = 0; r < n; r++) {
+		for (int c = 0; c < n; c++) {
+			for (int d = 0; d < 8; d++) {
+				std::string s;
+				int rr = r;
+				int cc = c;
+				for (int l = 1; l <= n; l++) {
+					s += table[rr][cc];
+					rr += dx[d];
+					cc += dy[d];
+					/*
+					for (int i = 0; i < dic_num; i++) {
+						if (strcmp(s.c_str(), dictionary[i]) == 0) {
+							printf("%s\n", s.c_str());
+							break;
+						}
+					}
+					*/
+					Position pos = find(s.c_str(), h);
+					if (isLegitimate(pos, h))
+						printf("%s\n", s.c_str());
+				}
+			}
+		}
+	}
+}
+
+
+
+//B
+//hashQuad.cpp
+#include"hashQuad.h"
+#include"fatal.h"
+#include<math.h>
+#include<string.h>
+#define MinTableSize 10
+
+enum KindOfEntry { Legitimate, Empty, Deleted };
+
+struct HashEntry {
+	ElementType element;
+	enum KindOfEntry info;
+};
+
+typedef struct HashEntry Cell;
+
+struct HashTbl {
+	int tableSize;
+	int hasInsertedNum;
+	Cell* theCells;//数组
+};
+
+static int hash(const char* key, int len, int tableSize) {
+	unsigned int hashVal = 0;
+	while (len--)
+		hashVal = (hashVal << 5) + *key++;
+	return hashVal % (tableSize);
+}
+static int isPrime(int num) {
+	for (int i = 2; i <= sqrt(num); i++)
+		if (num % i == 0)
+			return 0;
+	return 1;
+}
+static int nextPrime(int num) {
+	int i = num;
+	while (!isPrime(i))
+		i++;
+	return i;
+}
+
+static int mystrcmp(char* s1, const char* s2, int len) {
+	while (len && *s1 != '\0' && *s2 != '\0') {
+		if (*s1 != *s2)
+			return *s1 - *s2;
+		s1++;
+		s2++;
+		len--;
+	}
+	if (!len)
+		return *s1 - '\0';//指定s2的长度（少于实际长度），结束的时候当然是用假设的'\0',s1可能比s2长，相等
+	return 1;//s1比s2短，不相等
+}
+
+static void mystrcpy(char* s1, char* s2, int len) {
+	while (len--) {
+		*s1 = *s2;
+		s1++;
+		s2++;
+	}
+	*s1 = '\0';
+}
+
+int isLegitimate(Position pos, HashTable h) {
+	return h->theCells[pos].info == Legitimate;
+}
+
+
+HashTable initializeTable(int tableSize) {
+	HashTable h;
+	int i;
+	if (tableSize < MinTableSize) {
+		Error("Table size too small");
+		return NULL;
+	}
+	h = (HashTable)malloc(sizeof(struct HashTbl));
+	if (h == NULL)
+		FatalError("Out of space!!!");
+	h->tableSize = nextPrime(tableSize);
+	h->theCells = (Cell*)malloc(sizeof(Cell) * h->tableSize);
+	h->hasInsertedNum = 0;
+	if (h->theCells == NULL)
+		FatalError("Out of space!!!");
+	for (i = 0; i < h->tableSize; i++) {
+		h->theCells[i].info = Empty;
+	}
+	return h;
+}
+
+void destroyTable(HashTable h) {
+	for (int i = 0; i < h->tableSize; i++)
+		if (h->theCells[i].info == Legitimate)
+			free(h->theCells[i].element.s);
+	free(h->theCells);
+	free(h);
+}
+
+Position find(const char* s, int len, HashTable h) {
+	Position currentPos = hash(s, len, h->tableSize);
+	while (h->theCells[currentPos].info != Empty && mystrcmp(h->theCells[currentPos].element.s, s, len) != 0) {
+		currentPos = (currentPos + 1) % h->tableSize;
+	}
+	return currentPos;
+}
+
+HashTable insert(char* s, int len, enum KindOfStr info, HashTable h) {
+	if ((double)h->hasInsertedNum / h->tableSize > 0.5)
+		h = rehash(h);
+	Position pos = find(s, len, h);
+	if (h->theCells[pos].info != Legitimate) {
+		h->theCells[pos].element.s = (char*)malloc(sizeof(char) * strlen(s) + 1);
+		mystrcpy(h->theCells[pos].element.s, s, len);//
+		h->theCells[pos].element.info = info;
+		h->theCells[pos].info = Legitimate;
+		h->hasInsertedNum++;
+	}
+	else {//已存在相同的字符串。若插入的是单词，存在的是前缀，改
+		if (h->theCells[pos].element.info == PREFIX)
+			h->theCells[pos].element.info = info;
+	}
+	return h;
+}
+
+static HashTable insert(ElementType key, HashTable h) {
+	if ((double)h->hasInsertedNum / h->tableSize > 0.5)
+		h = rehash(h);
+	Position pos = find(key.s, strlen(key.s), h);
+	if (h->theCells[pos].info != Legitimate) {
+		h->theCells[pos].element.s = (char*)malloc(sizeof(char) * strlen(key.s) + 1);
+		strcpy(h->theCells[pos].element.s, key.s);
+		h->theCells[pos].element.info = key.info;
+		h->theCells[pos].info = Legitimate;
+		h->hasInsertedNum++;
+	}
+	return h;
+}
+
+HashTable rehash(HashTable h) {
+	HashTable newH = initializeTable(h->tableSize * 2);
+	for (int i = 0; i < h->tableSize; i++)
+		if (h->theCells[i].info == Legitimate)
+			insert(h->theCells[i].element, newH);
+	destroyTable(h);
+	return newH;
+}
+
+
+
+ElementType retrive(Position p, HashTable h) {
+	return h->theCells[p].element;
+}
+//main.cpp
+#include<stdio.h>
+#include<string>
+#include<algorithm>
+#include"hashQuad.h"
+
+#define MAXN 100
+
+char dictionary[MAXN][MAXN];
+char table[MAXN][MAXN];//字谜
+
+					   //由上顺时针旋转一圈
+int dx[8] = { 0,1,1,1,0,-1,-1,-1 };
+int dy[8] = { 1,1,0,-1,-1,-1,0,1 };
+
+int dic_num, n;
+
+int main() {
+	int i;
+	HashTable h = initializeTable(100);
+	scanf("%d%d", &dic_num, &n);
+
+	for (i = 0; i < dic_num; i++) {
+		scanf("%s", dictionary[i]);
+		int j;
+		for (j = 1; j < (int)strlen(dictionary[i]); j++) {//插入前缀
+			h = insert(dictionary[i], j, Prefix, h);
+		}
+		h = insert(dictionary[i], j, word, h);//插入单词
+	}
+
+	for (i = 0; i < n; i++) {
+		scanf("%s", table[i]);
+	}
+
+	for (int r = 0; r < n; r++) {//行
+		for (int c = 0; c < n; c++) {//列
+			for (int d = 0; d < 8; d++) {//方向
+				std::string s;
+				int rr = r;
+				int cc = c;
+				for (int l = 1; l <= n; l++) {//长度
+					s += table[rr][cc];
+					rr += dx[d];
+					cc += dy[d];
+					Position pos = find(s.c_str(), s.length(), h);
+					if (isLegitimate(pos, h) && retrive(pos, h).info == word)
+						printf("%s\n", s.c_str());
+					else if (!isLegitimate(pos, h)) {//找不到前缀
+						break;//找不到，换方向
+					}
+				}
+			}
+		}
+	}
+}
+
+
+//C
+#include"hashQuad.h"
+#include"fatal.h"
+#include<math.h>
+#include<string.h>
+#define MinTableSize 10
+
+enum KindOfEntry { Legitimate, Empty, Deleted };
+
+struct HashEntry {
+	ElementType element;
+	enum KindOfEntry info;
+};
+
+typedef struct HashEntry Cell;
+
+struct HashTbl {
+	int tableSize;
+	int hasInsertedNum;
+	Cell* theCells;//数组
+};
+
+static int hash(const char* key, int len, int tableSize) {
+	unsigned int hashVal = 0;
+	while (len--)
+		hashVal = (hashVal << 5) + *key++;
+	return hashVal % (tableSize);
+}
+static int isPrime(int num) {
+	for (int i = 2; i <= sqrt(num); i++)
+		if (num % i == 0)
+			return 0;
+	return 1;
+}
+static int nextPrime(int num) {
+	int i = num;
+	while (!isPrime(i))
+		i++;
+	return i;
+}
+
+static int mystrcmp(char* s1, const char* s2, int len) {
+	while (len && *s1 != '\0' && *s2 != '\0') {
+		if (*s1 != *s2)
+			return *s1 - *s2;
+		s1++;
+		s2++;
+		len--;
+	}
+	if (!len)
+		return *s1 - '\0';//指定s2的长度（少于实际长度），结束的时候当然是用假设的'\0',s1可能比s2长，相等
+	return 1;//s1比s2短，不相等
+}
+
+static void mystrcpy(char* s1, char* s2, int len) {
+	while (len--) {
+		*s1 = *s2;
+		s1++;
+		s2++;
+	}
+	*s1 = '\0';
+}
+
+int isLegitimate(Position pos, HashTable h) {
+	return h->theCells[pos].info == Legitimate;
+}
+
+static HashTable insert(char* s, int len, enum KindOfStr info, HashTable h, unsigned int* hashRecord) {
+	if ((double)h->hasInsertedNum / h->tableSize > 0.5)
+		h = rehash(h);
+
+	Position currentPos;
+	*hashRecord = ((*hashRecord) * 32 + *(s + len - 1));
+	currentPos = (*hashRecord) % h->tableSize;
+	while (h->theCells[currentPos].info != Empty && mystrcmp(h->theCells[currentPos].element.str, s, len) != 0) {
+		currentPos = (currentPos + 1) % h->tableSize;
+	}
+
+	if (h->theCells[currentPos].info != Legitimate) {
+		h->theCells[currentPos].element.str = (char*)malloc(sizeof(char) * len + 1);
+		mystrcpy(h->theCells[currentPos].element.str, s, len);
+		h->theCells[currentPos].element.infoOfStr = info;
+		h->theCells[currentPos].info = Legitimate;
+		h->hasInsertedNum++;
+	}
+	else {// 存在相同的字符串
+		if (h->theCells[currentPos].element.infoOfStr == PREFIX)
+			h->theCells[currentPos].element.infoOfStr = info;//可以直接赋值，值可能为PREFIX或WORD
+	}
+	return h;
+}
+
+HashTable insertWord(char* word, HashTable h) {
+	int j;
+	int len = strlen(word);
+	unsigned int hashRecord = 0;
+	for (j = 1; j < len; j++) {//插入前缀
+		h = insert(word, j, PREFIX, h, &hashRecord);
+	}
+	h = insert(word, j, WORD, h, &hashRecord);//插入单词
+	return h;
+}
+
+
+HashTable initializeTable(int tableSize) {
+	HashTable h;
+	int i;
+	if (tableSize < MinTableSize) {
+		Error("Table size too small");
+		return NULL;
+	}
+	h = (HashTable)malloc(sizeof(struct HashTbl));
+	if (h == NULL)
+		FatalError("Out of space!!!");
+	h->tableSize = nextPrime(tableSize);
+	h->theCells = (Cell*)malloc(sizeof(Cell) * h->tableSize);
+	h->hasInsertedNum = 0;
+	if (h->theCells == NULL)
+		FatalError("Out of space!!!");
+	for (i = 0; i < h->tableSize; i++) {
+		h->theCells[i].info = Empty;
+	}
+	return h;
+}
+
+void destroyTable(HashTable h) {
+	for (int i = 0; i < h->tableSize; i++)
+		if (h->theCells[i].info == Legitimate)
+			free(h->theCells[i].element.str);
+	free(h->theCells);
+	free(h);
+}
+
+Position find(const char* s, int len, HashTable h) {
+	Position currentPos = hash(s, len, h->tableSize);
+	while (h->theCells[currentPos].info != Empty && mystrcmp(h->theCells[currentPos].element.str, s, len) != 0) {
+		currentPos = (currentPos + 1) % h->tableSize;
+
+	}
+	return currentPos;
+}
+
+HashTable insert(char* s, int len, enum KindOfStr infoOfStr, HashTable h) {
+	if ((double)h->hasInsertedNum / h->tableSize > 0.5)
+		h = rehash(h);
+	Position pos = find(s, len, h);
+	if (h->theCells[pos].info != Legitimate) {
+		h->theCells[pos].element.str = (char*)malloc(sizeof(char) * len + 1);
+		mystrcpy(h->theCells[pos].element.str, s, len);//
+		h->theCells[pos].element.infoOfStr = infoOfStr;
+		h->theCells[pos].info = Legitimate;
+		h->hasInsertedNum++;
+	}
+	else {//已存在相同的字符串。若插入的是单词，存在的是前缀，改
+		if (h->theCells[pos].element.infoOfStr == PREFIX)
+			h->theCells[pos].element.infoOfStr = infoOfStr;
+	}
+	return h;
+}
+
+static HashTable insert(ElementType key, HashTable h) {
+	if ((double)h->hasInsertedNum / h->tableSize > 0.5)
+		h = rehash(h);
+	Position pos = find(key.str, strlen(key.str), h);
+	if (h->theCells[pos].info != Legitimate) {
+		h->theCells[pos].element.str = (char*)malloc(sizeof(char) * strlen(key.str) + 1);
+		strcpy(h->theCells[pos].element.str, key.str);
+		h->theCells[pos].element.infoOfStr = key.infoOfStr;
+		h->theCells[pos].info = Legitimate;
+		h->hasInsertedNum++;
+	}
+	return h;
+}
+
+HashTable rehash(HashTable h) {
+	HashTable newH = initializeTable(h->tableSize * 2);
+	for (int i = 0; i < h->tableSize; i++)
+		if (h->theCells[i].info == Legitimate)
+			insert(h->theCells[i].element, newH);
+	destroyTable(h);
+	return newH;
+}
+
+
+
+ElementType retrive(Position p, HashTable h) {
+	return h->theCells[p].element;
+}
+
+
+//main.cpp
+#include<stdlib.h>
+#include<stdio.h>
+#include<string.h>
+#include<string>
+#include"hashQuad.h"
+
+#define MAXN 100
+
+#define N 1000
+#define LEN 40
+
+char dictionary[MAXN][MAXN];
+char table[MAXN][MAXN];//字谜
+
+					   //由上顺时针旋转一圈
+int dx[8] = { 0,1,1,1,0,-1,-1,-1 };
+int dy[8] = { 1,1,0,-1,-1,-1,0,1 };
+
+int dic_num, n;
+
+
+int main() {
+	HashTable h = initializeTable(10);//小于30出问题
+
+	scanf("%d%d", &dic_num, &n);
+
+	for (int i = 0; i < dic_num; i++) {
+		scanf("%s", dictionary[i]);
+		h = insertWord(dictionary[i], h);
+	}
+
+	for (int i = 0; i < n; i++) {
+		scanf("%s", table[i]);
+	}
+
+	int dirChangedCnt = 0;
+	printf("\n");
+	for (int r = 0; r < n; r++) {//行  
+		for (int c = 0; c < n; c++) {//列  
+			for (int d = 0; d < 8; d++) {//方向  
+				std::string s;
+				int rr = r;
+				int cc = c;
+				for (int l = 1; l <= n; l++) {//长度  
+					s += table[rr][cc];
+					rr += dx[d];
+					cc += dy[d];
+					Position pos = find(s.c_str(), s.length(), h);
+					if (isLegitimate(pos, h) && retrive(pos, h).infoOfStr == WORD)
+						printf("%s\n", s.c_str());
+					else if (!isLegitimate(pos, h)) {//找不到前缀  
+						dirChangedCnt++;
+						break;//找不到，换方向  
+					}
+				}
+			}
+		}
+	}
+	printf("direction has changed %d times\n", dirChangedCnt);
+}
+
+//https://blog.csdn.net/qq789045/article/details/51416736
+//https://blog.csdn.net/qq789045/article/details/51417823
+//https://blog.csdn.net/qq789045/article/details/51428112

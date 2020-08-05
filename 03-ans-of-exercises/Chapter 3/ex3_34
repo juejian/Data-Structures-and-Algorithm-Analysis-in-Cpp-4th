@@ -1,0 +1,26 @@
+//a
+/*从头开始遍历链表，把每次访问到的结点（或其地址）存入一个集合（hashset）或字典（dictionary），
+如果发现某个结点已经被访问过了，就表示这个链表存在环，并且这个结点就是环的入口点*/
+
+//b
+bool hasCycle(node* head)
+{
+	if (!head)
+		return 0;
+	node* fast, * slow;
+	fast = slow = head;//在同一起点
+	while (1)
+	{
+		if (!fast || !fast->next)//排除空指针的情况
+			return false;
+		//fast追上了slow或是fast超过了slow
+		else if (fast == slow || fast->next == slow)
+			return true;
+		else {
+			slow = slow->next;
+			fast = fast->next->next;
+		}
+	}
+}
+//https://www.cnblogs.com/QG-whz/p/4118103.html
+//http://www.gocalf.com/blog/circle-of-link-list.html

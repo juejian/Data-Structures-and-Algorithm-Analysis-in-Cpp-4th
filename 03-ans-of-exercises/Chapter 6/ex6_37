@@ -1,0 +1,74 @@
+/*
+   Bin packing
+*/
+#include <vector>
+#include <queue>
+using namespace std;
+const double Cap = 1.0;
+class Bins
+{
+private:
+	vector<double> bins;
+	priority_queue<double> heapBins;
+public:
+	Bins(int size = 0)
+	{
+		bins.resize(size);
+		for (int i = 0; i < size; i++)
+			bins[i] = 0;
+	}
+	void clear() { bins.clear(); }
+	int size() { return bins.size(); }
+	void insertFirstFit(double item) // a.
+	{
+		for (int i = 0; i < bins.size(); i++)
+			if (bins[i] + item < Cap)
+			{
+				bins[i] += item;
+				return;
+			}
+		bins.push_back(item);
+	}
+	int insertWorstFit(double item) // b
+	{
+		static int size = 0;
+		double maxRoom;
+		if (heapBins.empty())
+			heapBins.push(Cap - item);
+		else
+		{
+			maxRoom = heapBins.top();
+			if (maxRoom > item) // there is room
+			{
+				heapBins.pop();
+				heapBins.push(maxRoom - item);
+			}
+			else
+			{
+				heapBins.push(Cap - item);
+				size++;
+			}
+		}
+		return size;
+	}
+	void insertBestFit(double item) // c
+	{
+		double gap = Cap;
+		int gapIndex = -1;
+		if (bins.size() == 0)
+			bins.push_back(item);
+		else
+		{
+			for (int i = 0; i < bins.size(); i++)
+				if (bins[i] + item < Cap && bins[i] + item < gap)
+				{
+					gap = Cap - bins[i] - item;
+					gapIndex = i;
+				}
+			if (gapIndex < 0)
+				bins.push_back(item);
+			else
+				bins[gapIndex] += item;
+		}
+	}
+};

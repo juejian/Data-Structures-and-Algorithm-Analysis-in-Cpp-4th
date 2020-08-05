@@ -1,0 +1,19 @@
+//LastNode contains last value that was assigned to a node
+Node* genTree(int height, int& lastNode)
+{
+	Node* t = NULL;
+	if (height >= 0)
+	{
+		t = new Node;
+		t->left = genTree(height - 1, lastNode);
+		t->element = ++lastNode;
+		t->right = genTree(height - 2, lastNode);
+	}
+	return t;
+}
+
+Node* minAvlTree(int h)
+{
+	int lastNodeAssigned = 0;
+	return genTree(h, lastNodeAssigned);
+}

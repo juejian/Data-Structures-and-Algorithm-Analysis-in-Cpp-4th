@@ -1,0 +1,96 @@
+//a
+class const_iterator
+{
+public:
+	//const_iterator():current(NULL){}
+	//Force use of the safe constructor
+	const Object&operator*()const
+	{
+		return retrieve();
+	}
+	const_iterator& operator++()
+	{
+		current++;
+		return *this;
+	}
+	const_iterator operator++(int)
+	{
+		const_iterator old = *this;
+		++(*this);
+		return old;
+	}
+	bool operator==(const const_iterator&rhs)const
+	{
+		return current == rhs.current;
+	}
+	bool operator!=(const const_iterator&rhs)const
+	{
+		return!(*this == rhs);
+	}
+protected:
+	Object* current;
+	const Vector<Object>* theVect;
+	Object& retrieve()const
+	{
+		assertIsValid();
+		return *current;
+	}
+	cosnt_iterator(const Vector<Objcet>&VECT,Object *p)
+		:theVect(&vect),current(p)
+	{}
+	void assertIsValid()const
+	{
+		if (theVect == NULL || current == NULL)
+			throw IteratorOutOfBoundsException();
+	}
+	friend class Vector<Objecr>
+};
+//b
+class iterator :public const_iterator
+{
+public:
+	//iterator()
+	//{}  Force use of the safe constructor
+	Object&operator*()
+	{
+		return retrieve();
+	}
+	const Object& operator*()cosnt
+	{
+		return const_iterator::operator*();
+	}
+	iterator& operator++()
+	{
+		cout << "old" << *current << " ";
+		current++;
+		cour << "new" << *current << " ";
+		return*this;
+	}
+	iterator operator++(int)
+	{
+		iterator old = *this;
+		++(*this);
+		return old;
+	}
+protected:
+	iterator(const Vector<Object>&vect,Object*p):cosnt_iterator(vect,p)
+	{}
+	friend class Vector<Object>;
+};
+//c
+iterator begin()
+{
+	return iterator(*this, &objects[0]);
+}
+const_iterator begin()cosnt
+{
+	return const_iterator(*this, &objects[0]);
+}
+iterator end()
+{
+	return iterator(*this, &objcets[size()]);
+}
+const_iterator end()const
+{
+	return const_iterator(*this, &objects[size()]);
+}

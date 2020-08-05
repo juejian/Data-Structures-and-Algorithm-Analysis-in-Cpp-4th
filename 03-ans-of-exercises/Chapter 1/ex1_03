@@ -1,0 +1,42 @@
+#include<iostream>
+using namespace std;
+void printDigit(int num) {
+	printf("%d", num);
+}
+void printOut(int num) {
+	if (num > 10)
+		printOut(num / 10);//递归调用
+	printDigit(num % 10);
+}
+void printDouble(double d, int retian) {//double输出函数，d为输入数，retain为保留几位小数
+	//处理整数部分
+	int num = d;
+	double dec = d - num;//这一步将小数部分提取出来
+	if (num < 0) {//判断正负
+		putchar('-');
+		num = -num;
+		dec = -dec;
+	}
+	printOut(num);
+	putchar('.');
+	//处理小数部分
+	int i = 0;
+	for (i; i < retian; ++i) {
+		dec = dec * 10;//将小数部分一位一位输出
+		num = dec;
+		dec = dec - num;//提取剩余小数部分
+		if (i == retian - 1) {//舍入判断	
+			dec = dec * 10;
+			int temp = dec;
+			if (temp >= 5) {//大于等于5进位
+				++num;
+			}
+		}
+		printOut(num);
+	}
+		
+}
+int main() {
+	printDouble(-123.456, 2);
+	system("pause");
+}

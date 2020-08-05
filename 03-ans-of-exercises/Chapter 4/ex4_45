@@ -1,0 +1,6 @@
+bool similar(Node* t1, Node* t2)
+{
+	if (t1 == NULL || t2 == NULL)
+		return t1 == NULL && t2 == NULL;
+	return similar(t1->left, t2->left) && similar(t1->right, t2->right);
+}

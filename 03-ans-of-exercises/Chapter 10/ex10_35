@@ -1,0 +1,20 @@
+// Print the path between s and t, except do not print
+// the first or last vertex. Print a trailing " to " only.
+void printPath1(const matrix<int>& path, int s, int t) 
+{ 
+	int stopOver = path[s][t]; 
+	if (s != t && stopOver != -1) 
+	{ 
+		printPath1(path, s, stopOver); 
+		cout << stopOver << " to "; 
+		printPath1(path, stopOver, t); 
+	} 
+}
+
+// Assume the existence of a path of length at least 1 
+void printPath(const matrix<int>& path, int s, int t) 
+{ 
+	cout << s << " to "; 
+	printPath1(path, s, t); 
+	cout << t; 
+}

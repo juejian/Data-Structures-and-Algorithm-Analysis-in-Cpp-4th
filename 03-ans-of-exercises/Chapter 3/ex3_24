@@ -1,0 +1,193 @@
+//用一个数组实现两个栈  
+struct stack2
+{
+	//栈1和栈2的栈顶指针  
+	int top1, top2;//分别初始化为0和n+1  
+	int len;//数组长度  
+	int* s;//数组  
+	stack2(int size) :top1(0), top2(size + 1), len(size) { s = new int[size + 1]; }
+};
+//分别输出两个栈，从栈底到栈顶  
+void Print(stack2 S)
+{
+	int i;
+	cout << "stack1:";
+	for (i = 1; i <= S.top1; i++)
+		cout << S.s[i] << ' ';
+	cout << endl;
+	cout << "stack2:";
+	for (i = S.len; i >= S.top2; i--)
+		cout << S.s[i] << ' ';
+	cout << endl;
+}
+//判断栈是否为空，flag为0表示对第1个栈进行操作，flag为1表示对第2个栈进行操作  
+bool Stack2_Empty(stack2 & S, bool flag)
+{
+	if (flag == 0 && S.top1 < 1)
+		return 1;
+	if (flag == 1 && S.top2 > S.len)
+		return 1;
+	return 0;
+}
+//入栈，flag为0表示对第1个栈进行操作，flag为1表示对第2个栈进行操作  
+void Push(stack2 & S, int value, bool flag)
+{
+	//已满  
+	if (S.top1 > S.top2)
+	{
+		cout << "error:overflow" << endl;
+		return;
+	}
+	//对栈1操作  
+	if (flag == 0)
+	{
+		//top  
+		S.top1++;
+		S.s[S.top1] = value;
+	}
+	//对栈2操作  
+	else
+	{
+		S.top2--;
+		S.s[S.top2] = value;
+	}
+}
+//出栈，flag为0表示对第1个栈进行操作，flag为1表示对第2个栈进行操作  
+int Pop(stack2 & S, bool flag)
+{
+	int ret;
+	//对栈1操作  
+	if (flag == 0)
+	{
+		//栈1为空  
+		if (S.top1 < 0)
+		{
+			cout << "error:underflow" << endl;
+			return -1;
+		}
+		else
+		{
+			ret = S.s[S.top1];
+			S.top1--;
+		}
+	}
+	//对栈2操作  
+	else
+	{
+		//栈2为空  
+		if (S.top2 > S.len)
+		{
+			cout << "error:underflow" << endl;
+			return -1;
+		}
+		else
+		{
+			ret = S.s[S.top2];
+			S.top2++;
+		}
+	}
+	return ret;
+}
+
+//another
+template<class T>
+class TwoStack
+{
+public:
+	TwoStack()
+		:_a(NULL)
+		, _top1(0)
+		, _top2(0)
+		, _capacity(0)
+	{
+		_CheckCapacity();
+	}
+	~TwoStack()
+	{
+		if (_a)
+			delete[] _a;
+	}
+	void Push1(const T& d)
+	{
+		_CheckCapacity();
+		_a[_top1++] = d;
+	}
+	void Push2(const T& d)
+	{
+		_CheckCapacity();
+		_a[_top2--] = d;
+	}
+	void Pop1()
+	{
+		if (_top1 > 0)
+			--_top1;
+	}
+	void Pop2()
+	{
+		if (_top2 < _capacity - 1)
+			_top2++;
+	}
+	size_t Size1()
+	{
+		return _top1;
+	}
+	size_t Size2()
+	{
+		return _capacity - 1 - _top2;
+	}
+	bool Empty1()
+	{
+		return _top1 == 0;
+	}
+	bool Empty2()
+	{
+		return _top2 == _capacity - 1;
+	}
+	T& Top1()
+	{
+		if (_top1 > 0)
+		{
+			return _a[_top1 - 1];
+		}
+	}
+	T& Top2()
+	{
+		if (_top2 < _capacity - 1)
+			return _a[_top2 + 1];
+	}
+
+private:
+	void _CheckCapacity()
+	{
+		if (_a == NULL)
+		{
+			_capacity += 3;
+			_a = new T[_capacity];
+			_top2 = _capacity - 1;
+			return;
+		}
+		if (_top1 == _top2)
+		{
+			size_t OldCapacity = _capacity;
+			_capacity = _capacity * 2;
+			T* tmp = new T[_capacity];
+			for (size_t i = 0; i < _top1; i++)
+			{
+				tmp[i] = _a[i];
+			}
+			for (size_t j = OldCapacity - 1, i = _capacity - 1; j > _top2; j--, i--)
+			{
+				tmp[i] = _a[j];
+			}
+			delete[] _a;
+			_a = tmp;
+			_top2 += _capacity / 2;
+		}
+	}
+
+private:
+	T* _a;
+	size_t _top1;
+	size_t _top2;
+	size_t _capacity;
+};

@@ -1,0 +1,139 @@
+//a
+class const_iterator
+{
+public:
+	const_iterator():current(NULL)
+	{ }
+	const Comparable&operator*()cosnt
+	{
+		return retrieve();
+	}
+	const_iterator& operator++()
+	{
+		BinaryNode<Comparable>* t;
+		if (current->right)
+		{
+			t = current->right;
+			while (t->left != NULL)
+				t = t->left;
+			current = t;
+		}
+		else {
+			t = current->parent;
+			cout << "first parent is " << t->element << endl;
+			while (t && t->element < current->element)
+				t = t->parent;
+		}
+		return *this;
+	}
+	const_iterator operator++(int)
+	{
+		const_iterator old = *this;
+		++(*this);
+		return old;
+	}
+	bool operator==(const const_iterator&rhs)const
+	{
+		return current == rhs.current;
+	}
+	bool operator!=(const const_iterator&rhs)const
+	{
+		return!(*this == rhs);
+	}
+protected:
+	BinaryNode<Comparable>* current;
+	Comparable&retrieve()const
+	{
+		return current->element;
+	}
+	const_iterator(BinaryNode<Comparable>*p):current(p)
+	{}
+	freind class Set;
+};
+//b
+class iterator :public const_iterator
+{
+public:
+	iterator()
+	{}
+	Comparable&operator*()
+	{
+		return const_iterator::retrieve();
+	}
+	const Comparable& operator*()const
+	{
+		return const_iterator::operator*();
+	}
+	iterator& operator++()
+	{
+		BinaryNode<Comparable>* t;
+		if (current->right)
+		{
+			t = current->right;
+			while (t->left != NULL)
+				t = t->left;
+			current = t;
+		}
+		else {
+			t = current->parent;
+			cout << "first parent is " << t->element << endl;
+			while (t && t->element < current->element)
+				t = t->parent;
+			current = t;
+		}
+		return *this;
+	}
+	iterator operator++(int)
+	{
+		const_iterator old = *this;
+		++(*this);
+		return old;
+	}
+	iterator(BinaryNode<Comparable>*p):const_iterator(p)
+	{}
+	friend calss set;
+};
+//c
+//This is the public insert
+iterator insert(const Comparable& x) {
+	Size++;
+	return insert(x, root, root);
+}
+//This is private
+iterator insert(const Comparable& x,
+	BinaryNode<Comparable>*& t,
+	BinaryNode<Comparable>* p)//parent node
+{
+	if (t == NULL)
+	{
+		t = new BinaryNode<Comparable>(x, NULL, NULL, p);
+		return iterator(t);
+	}
+	else if (x < t->element)
+		return(insert(x, t->left, t));
+	else if (t->element < x)
+		return(insert(x, t->right, t));
+	return iterator(t);
+}
+//This is the public begin
+iterator begin()
+{
+	BinaryNode<Comparable>* t = root;
+	while (t->left)
+		t = t->left;
+	return iterator(t);
+}
+//d
+template<typename Comparable>
+struct BinaryNode
+{
+	Comparable element;
+	BinaryNode* left;
+	BinaryNode* right;
+	BinaryNode* parent;
+	BinaryNode() { left = NULL, ; right = NULL; parent = NULL; }
+	BinaryNode(const Comparable& theElement) { element = theElement; left = NULL; right = NULL; parent = NULL; }
+	BinaryNode(const Comparable&theElement,BinaryNode*lt,BinaryNode*rt,
+		BinaryNode*pt)
+		:element(theElement),left(lt),right(rt),parent(pt){}
+};

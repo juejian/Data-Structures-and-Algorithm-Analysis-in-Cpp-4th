@@ -1,0 +1,70 @@
+AvlTree insert(ElementType X, AvlTree t) {
+	AvlTree root = t;
+	std::stack<AvlTree> route;
+
+	while (1) {
+		if (t == NULL) {
+			t = (AvlTree)malloc(sizeof(struct AvlNode));//动态分配内存
+			if (t == NULL)
+				Error("out of memory");
+			t->element = X;
+			t->left = NULL;
+			t->right = NULL;
+			t->height = 0;
+			t->isDeleted = 0;
+			route.push(t);
+			break;
+		}
+		else if (X < t->element) {
+			route.push(t);
+			t = t->left;
+			continue;
+		}
+		else if (X > t->element) {
+			route.push(t);
+			t = t->right;
+			continue;
+		}
+		else {
+			t->isDeleted = 0;
+			return root;
+		}
+	}
+
+	AvlTree parent,son;
+	while (1) {
+		son = route.top();
+		route.pop();
+		if (route.empty())
+			return son;
+		parent = route.top();
+		route.pop();
+		if (parent->element < son->element) {//儿子在右边
+			parent->right = son;
+			if (height(parent->right) - height(parent->left) == 2) {
+				if (X > parent->right->element)
+					parent = rotateWithRightChild(parent);
+				else
+					father = doubleWithRightChild(parent);
+			}
+			route.push(parent);
+		}
+		else if (parent->element > son->element) {//儿子在左边
+			parent->left = son;
+
+			if (height(parent->left) - height(parent->right) == 2) {
+				if (X < parent->left->element) {
+					parent = rotateWithLeftChild(parent);
+				}
+				else
+					parent = doubleWithLeftChild(parent);
+			}
+			route.push(parent);
+		}
+		parent->height = Max(height(parent->left), height(parent->right)) + 1;
+	}
+
+
+
+}
+//https://blog.csdn.net/qq789045/article/details/51225625

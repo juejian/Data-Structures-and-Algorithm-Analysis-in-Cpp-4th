@@ -1,0 +1,23 @@
+struct Node {
+	Node* parent;
+	Node* firstChild;
+	Node* sibling;
+};
+
+queue<Node*> nodeQueue;
+void printALL(Node* root)
+{
+	Node* temp = root;//根为初始哨兵
+	while (temp)
+	{
+		print(temp);
+		temp = temp->firstChild;
+		while (temp)
+		{
+			nodeQueue.push(temp);
+			temp = temp->sibling;
+		}
+		temp = temp->sibling;
+	}
+
+}
